@@ -34,7 +34,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		longURL := string(body)
 
 		// выводим полученный URL
-		fmt.Fprintln(w, "Получили URL:", longURL)
+		fmt.Println("Получили URL:", longURL)
 
 		// получаем ID
 		id := generateID()
@@ -44,9 +44,8 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 
 		// выводим ответ с кодом 201 и сокращенный URL
 		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, "http://localhost:8080/get/%s\n", id)
+		fmt.Fprintf(w, "http://localhost:8080/get/%s", id)
 
-		fmt.Fprintln(w, "мапа", urlMap)
 	} else {
 		http.Error(w, "ошибка 400: не метод POST", http.StatusBadRequest)
 	}
