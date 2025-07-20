@@ -11,7 +11,7 @@ import (
 var urlMap = make(map[string]string)
 
 // функция для генерации ID
-func generateId() string {
+func generateID() string {
 	charset := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, 7)
 	for i := range b {
@@ -31,16 +31,16 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// преобразуем URL из байтов в строку
-		longUrl := string(body)
+		longURL := string(body)
 
 		// выводим полученный URL
-		fmt.Fprintln(w, "Получили URL:", longUrl)
+		fmt.Fprintln(w, "Получили URL:", longURL)
 
 		// получаем ID
-		id := generateId()
+		id := generateID()
 
 		// присваеваем полученный URL к полученному ID
-		urlMap[id] = longUrl
+		urlMap[id] = longURL
 
 		// выводим ответ с кодом 201 и сокращенный URL
 		w.WriteHeader(http.StatusCreated)
@@ -64,14 +64,14 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// ищем оригинальный URL в мапе по полученному ID
-		originUrl, ok := urlMap[id]
+		originURL, ok := urlMap[id]
 		if !ok {
 			http.Error(w, "ошибка 404: URL не найден", http.StatusNotFound)
 			return
 		}
 
 		// перенаправляет пользователя на оригинальный URL
-		http.Redirect(w, r, originUrl, http.StatusTemporaryRedirect)
+		http.Redirect(w, r, originURL, http.StatusTemporaryRedirect)
 	} else {
 		http.Error(w, "ошибка 400: не метод GET", http.StatusBadRequest)
 	}
