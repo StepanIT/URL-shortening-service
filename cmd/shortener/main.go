@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-const SERVER_ADRESS = "localhost:8080"
+const serverAdress = "localhost:8080"
 
 // Мапа для хранения ID(сокращенный URL) и полный URL
 var urlMap = make(map[string]string)
@@ -50,7 +50,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 
 	// выводим ответ с кодом 201 и сокращенный URL
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "http://%s/get/%s", SERVER_ADRESS, id)
+	fmt.Fprintf(w, "http://%s/get/%s", serverAdress, id)
 
 }
 
@@ -84,7 +84,7 @@ func handler() {
 	http.HandleFunc("/", postHandler)
 	http.HandleFunc("/get/", getHandler)
 
-	http.ListenAndServe(SERVER_ADRESS, nil)
+	http.ListenAndServe(serverAdress, nil)
 }
 
 func main() {
