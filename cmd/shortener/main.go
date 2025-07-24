@@ -1,10 +1,7 @@
 package main
 
-import (
-	"shortener/server"
-)
+import "github.com/StepanIT/URL-shortening-service/cmd/shortener/server"
 
-
-func main () {
+func main() {
 	server.Handler()
 }

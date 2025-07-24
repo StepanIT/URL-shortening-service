@@ -6,12 +6,9 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+
+	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
 )
-
-
-
-
-
 
 // функция для генерации ID
 func generateID() string {
@@ -46,10 +43,10 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	id := generateID()
 
 	// присваеваем полученный URL к полученному ID
-	urlMap[id] = longURL
+	storage.UrlMap[id] = longURL
 
 	// выводим ответ с кодом 201 и сокращенный URL
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "http://%s/get/%s", serverAdress, id)
+	fmt.Fprintf(w, "http://%s/get/%s", storage.ServerAddress, id)
 
 }

@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"net/http"
-)
 
+	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
+)
 
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -19,7 +20,7 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// ищем оригинальный URL в мапе по полученному ID
-	originURL, ok := urlMap[id]
+	originURL, ok := storage.UrlMap[id]
 	if !ok {
 		http.Error(w, "ошибка 404: URL не найден", http.StatusNotFound)
 		return

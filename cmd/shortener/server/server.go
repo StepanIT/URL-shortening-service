@@ -2,18 +2,15 @@ package server
 
 import (
 	"net/http"
-	"shortener/handlers"
+
+	"github.com/StepanIT/URL-shortening-service/cmd/shortener/handlers"
+	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
 )
-
-const serverAdress = "localhost:8080"
-
-// Мапа для хранения ID(сокращенный URL) и полный URL
-var UrlMap = make(map[string]string)
 
 // функция для создания сервера и обработчиков
 func Handler() {
 	http.HandleFunc("/", handlers.PostHandler)
 	http.HandleFunc("/get/", handlers.GetHandler)
 
-	http.ListenAndServe(serverAdress, nil)
+	http.ListenAndServe(storage.ServerAddress, nil)
 }
