@@ -10,6 +10,11 @@ import (
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
 )
 
+// структура с интерфейсом для работы с хранилищем
+type Handler struct {
+	Repo storage.Repositories
+}
+
 // функция для генерации ID
 func generateID() string {
 	charset := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -20,7 +25,7 @@ func generateID() string {
 	return string(b)
 }
 
-func PostHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "ошибка 400: не метод POST", http.StatusBadRequest)
 		return
@@ -32,18 +37,24 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ошибка 400", http.StatusBadRequest)
 		return
 	}
+	log.Println("Получили URL:", body)
 
 	// преобразуем URL из байтов в строку
-	longURL := string(body)
+	LongURL := string(body)
 
 	// выводим полученный URL
-	log.Println("Получили URL:", longURL)
+	log.Println("Получили URL:", LongURL)
 
 	// получаем ID
 	id := generateID()
 
 	// присваеваем полученный URL к полученному ID
-	storage.UrlMap[id] = longURL
+	err = h.Repo.Save(id, LongURL)
+	log.Println("Присвоенный URL", err)
+	if err != nil {
+		http.Error(w, "Ошибка при сохранении", http.StatusInternalServerError)
+		return
+	}
 
 	// выводим ответ с кодом 201 и сокращенный URL
 	w.WriteHeader(http.StatusCreated)

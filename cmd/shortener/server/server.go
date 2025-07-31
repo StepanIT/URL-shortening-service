@@ -9,8 +9,16 @@ import (
 
 // функция для создания сервера и обработчиков
 func Handler() {
-	http.HandleFunc("/", handlers.PostHandler)
-	http.HandleFunc("/get/", handlers.GetHandler)
+	// создаём экхемпляр хранилища
+	repo := &storage.InMemoryStorage{
+		Data: make(map[string]string),
+	}
+	// создаём обработчик, передаём ему хранилище через интерфейс
+	h := &handlers.Handler{Repo: repo}
 
+	http.HandleFunc("/", h.PostHandler)
+	http.HandleFunc("/get/", h.GetHandler)
+
+	// запуск сервера
 	http.ListenAndServe(storage.ServerAddress, nil)
 }
