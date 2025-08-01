@@ -26,6 +26,7 @@ func TestPostHandler_Success(t *testing.T) {
 
 	// получаем ответ
 	resp := w.Result()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
 		t.Errorf("ожидался статус 201 Created, а получили %d", resp.StatusCode)
@@ -44,6 +45,8 @@ func TestPostHandler_EmptyBody(t *testing.T) {
 	h.PostHandler(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("ожидался статус 400 Bad Request, получили %d", resp.StatusCode)
 	}
@@ -61,6 +64,8 @@ func TestPostHandler_WrongMethod(t *testing.T) {
 	h.PostHandler(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("ожидался статус 400 при неправильном методе, получили %d", resp.StatusCode)
 	}
@@ -82,6 +87,7 @@ func TestGetHandler_Success(t *testing.T) {
 	h.GetHandler(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusTemporaryRedirect {
 		t.Errorf("ожидался статус 307 Temporary Redirect, получили %d", resp.StatusCode)
@@ -105,6 +111,7 @@ func TestGetHandler_NotFound(t *testing.T) {
 	h.GetHandler(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNotFound {
 		t.Errorf("ожидался статус 404 Not Found, получили %d", resp.StatusCode)
@@ -122,6 +129,7 @@ func TestGetHandler_EmptyID(t *testing.T) {
 	h.GetHandler(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("ожидался статус 400 Bad Request при пустом ID, получили %d", resp.StatusCode)
@@ -139,6 +147,7 @@ func TestGetHandler_WrongMethod(t *testing.T) {
 	h.GetHandler(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNotFound {
 		t.Errorf("ожидался статус 404 при методе POST, получили %d", resp.StatusCode)
