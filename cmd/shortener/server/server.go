@@ -1,10 +1,9 @@
 package server
 
 import (
-	"net/http"
-
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/handlers"
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
+	"github.com/gin-gonic/gin"
 )
 
 // функция для создания сервера и обработчиков
@@ -16,9 +15,11 @@ func Handler() {
 	// создаём обработчик, передаём ему хранилище через интерфейс
 	h := &handlers.Handler{Repo: repo}
 
-	http.HandleFunc("/", h.PostHandler)
-	http.HandleFunc("/get/", h.GetHandler)
+	router := gin.Default()
+
+	router.POST("/", h.PostHandler)
+	router.GET("/get/:id", h.GetHandler)
 
 	// запуск сервера
-	http.ListenAndServe(storage.ServerAddress, nil)
+	router.Run(storage.ServerAddress)
 }

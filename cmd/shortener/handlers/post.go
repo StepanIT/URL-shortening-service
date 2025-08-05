@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
+	"github.com/gin-gonic/gin"
 )
 
 // структура с интерфейсом для работы с хранилищем
@@ -25,16 +26,12 @@ func generateID() string {
 	return string(b)
 }
 
-func (h *Handler) PostHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "ошибка 400: не метод POST", http.StatusBadRequest)
-		return
-	}
+func (h *Handler) PostHandler(c *gin.Context) {
 
 	// читаем тело запроса
-	body, err := io.ReadAll(r.Body)
+	body, err := io.ReadAll(c.Request.Body)
 	if err != nil || len(body) == 0 {
-		http.Error(w, "ошибка 400", http.StatusBadRequest)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "ошибка 400"})
 		return
 	}
 	log.Println("Получили URL:", body)
@@ -52,12 +49,13 @@ func (h *Handler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	err = h.Repo.Save(id, LongURL)
 	log.Println("Присвоенный URL", err)
 	if err != nil {
-		http.Error(w, "Ошибка при сохранении", http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при сохранении"})
 		return
 	}
 
 	// выводим ответ с кодом 201 и сокращенный URL
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "http://%s/get/%s", storage.ServerAddress, id)
+	c.JSON(http.StatusCreated, gin.H{
+		"shortURL": fmt.Sprintf("http://%s/get/%s", storage.ServerAddress, id),
+	})
 
 }

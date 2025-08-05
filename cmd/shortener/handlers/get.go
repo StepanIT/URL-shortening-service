@@ -3,31 +3,28 @@ package handlers
 import (
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "ошибка 404: не метод GET", http.StatusNotFound)
-		return
-	}
-
+func (h *Handler) GetHandler(c *gin.Context) {
 	// получаем ID из пути запроса, всё что идет после /get/
-	id := r.URL.Path[len("/get/"):]
-	log.Println("найденный ID", id)
+	id := c.Param("id")
 	if id == "" {
-		http.Error(w, "ошибка 400: пустой URL", http.StatusBadRequest)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "ошибка 400: пустой URL"})
 		return
 	}
-
 	// ищем оригинальный URL по ID через метод Get интерфейса Repo
 	LongURL, err := h.Repo.Get(id)
 	log.Println("найденный URL", LongURL)
 	if err != nil {
-		http.Error(w, "ошибка 404: URL не найден", http.StatusNotFound)
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"error": "ошибка 404: URL не найден"})
 		return
 	}
 
 	// перенаправляет пользователя на оригинальный URL
-	http.Redirect(w, r, LongURL, http.StatusTemporaryRedirect)
+	c.Redirect(http.StatusTemporaryRedirect, LongURL)
 
 }
