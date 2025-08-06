@@ -100,6 +100,7 @@ func TestGetHandler_NotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 	c := getTestGinContext(w)
 	c.Request = httptest.NewRequest(http.MethodGet, "/get/неизвестныйID", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "nonexistent"}}
 
 	// call handler
 	h.GetHandler(c)
