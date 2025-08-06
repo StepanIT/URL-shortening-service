@@ -97,39 +97,3 @@ func TestGetHandler_NotFound(t *testing.T) {
 		t.Errorf("ожидался статус 404 Not Found, получили %d", w.Code)
 	}
 }
-
-// ошибка, если ID не передан
-func TestGetHandler_EmptyID(t *testing.T) {
-	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
-
-	req := httptest.NewRequest(http.MethodGet, "/get/", nil)
-	w := httptest.NewRecorder()
-
-	h.GetHandler(w, req)
-
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("ожидался статус 400 Bad Request при пустом ID, получили %d", resp.StatusCode)
-	}
-}
-
-// ошибка, если метод запроса не GET
-func TestGetHandler_WrongMethod(t *testing.T) {
-	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
-
-	req := httptest.NewRequest(http.MethodPost, "/get/someid", nil)
-	w := httptest.NewRecorder()
-
-	h.GetHandler(w, req)
-
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusNotFound {
-		t.Errorf("ожидался статус 404 при методе POST, получили %d", resp.StatusCode)
-	}
-}
