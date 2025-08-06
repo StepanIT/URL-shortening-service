@@ -54,30 +54,29 @@ func TestPostHandler_EmptyBody(t *testing.T) {
 	}
 }
 
-// успешный GET-запрос, найден ID, редирект на оригинальный URL
+// successful GET request
 func TestGetHandler_Success(t *testing.T) {
 	repo := storage.NewInMemoryStorage()
 	id := "abc123"
 	url := "https://youtube.com"
 
-	// заранее сохраняем пару id и url
+	// save id and url
 	repo.Save(id, url)
 	h := &Handler{Repo: repo}
 
-	req := httptest.NewRequest(http.MethodGet, "/get/"+id, nil)
 	w := httptest.NewRecorder()
+	c := getTestGinContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/get/"+id, nil)
+	c.Params = []gin.Param{{Key: "id", Value: id}}
 
-	h.GetHandler(w, req)
+	h.GetHandler(c)
 
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusTemporaryRedirect {
-		t.Errorf("ожидался статус 307 Temporary Redirect, получили %d", resp.StatusCode)
+	if w.Code != http.StatusTemporaryRedirect {
+		t.Errorf("ожидался статус 307 Temporary Redirect, получили %d", w.Code)
 	}
 
-	// проверяем, куда редиректит
-	location := resp.Header.Get("Location")
+	// location check
+	location := w.Header().Get("Location")
 	if location != url {
 		t.Errorf("ожидался редирект на %s, а получили %s", url, location)
 	}
