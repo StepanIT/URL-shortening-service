@@ -82,21 +82,19 @@ func TestGetHandler_Success(t *testing.T) {
 	}
 }
 
-// ошибка, если ID не существует в базе
+// if the ID does not exist in the database
 func TestGetHandler_NotFound(t *testing.T) {
 	repo := storage.NewInMemoryStorage()
 	h := &Handler{Repo: repo}
 
-	req := httptest.NewRequest(http.MethodGet, "/get/неизвестныйID", nil)
 	w := httptest.NewRecorder()
+	c := getTestGinContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/get/неизвестныйID", nil)
 
-	h.GetHandler(w, req)
+	h.GetHandler(c)
 
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusNotFound {
-		t.Errorf("ожидался статус 404 Not Found, получили %d", resp.StatusCode)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("ожидался статус 404 Not Found, получили %d", w.Code)
 	}
 }
 
