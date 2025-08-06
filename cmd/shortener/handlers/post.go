@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"math/rand"
@@ -54,8 +53,6 @@ func (h *Handler) PostHandler(c *gin.Context) {
 	}
 
 	// выводим ответ с кодом 201 и сокращенный URL
-	c.JSON(http.StatusCreated, gin.H{
-		"shortURL": fmt.Sprintf("http://%s/get/%s", storage.ServerAddress, id),
-	})
+	c.String(http.StatusCreated, "http://%s/get/%s", storage.ServerAddress, id)
 
 }
