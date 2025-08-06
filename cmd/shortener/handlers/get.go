@@ -10,11 +10,6 @@ import (
 func (h *Handler) GetHandler(c *gin.Context) {
 	// получаем ID из пути запроса, всё что идет после /get/
 	id := c.Param("id")
-	if id == "" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": "ошибка 400: пустой URL"})
-		return
-	}
 	// ищем оригинальный URL по ID через метод Get интерфейса Repo
 	LongURL, err := h.Repo.Get(id)
 	log.Println("найденный URL", LongURL)
