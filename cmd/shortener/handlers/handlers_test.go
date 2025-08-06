@@ -38,22 +38,19 @@ func TestPostHandler_Success(t *testing.T) {
 
 }
 
-// ошибка, если тело запроса пустое
+// request body is empty
 func TestPostHandler_EmptyBody(t *testing.T) {
 	repo := storage.NewInMemoryStorage()
 	h := &Handler{Repo: repo}
 
-	// пустое тело запроса
-	req := httptest.NewRequest(http.MethodPost, "/", nil)
 	w := httptest.NewRecorder()
+	c := getTestGinContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/", nil)
 
-	h.PostHandler(w, req)
+	h.PostHandler(c)
 
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("ожидался статус 400 Bad Request, получили %d", resp.StatusCode)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("ожидался статус 400 Bad Request, получили %d", w.Code)
 	}
 }
 
