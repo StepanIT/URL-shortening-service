@@ -7,7 +7,15 @@ import (
 	"testing"
 
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
+	"github.com/gin-gonic/gin"
 )
+
+// creating a Gin context
+func getTestGinContext(w *httptest.ResponseRecorder) *gin.Context {
+	gin.SetMode(gin.TestMode)
+	c, _ := gin.CreateTestContext(w)
+	return c
+}
 
 // тест на успешную отправку POST запроса и создание короткой ссылки
 func TestPostHandler_Success(t *testing.T) {
