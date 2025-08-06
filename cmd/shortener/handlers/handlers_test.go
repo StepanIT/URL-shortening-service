@@ -17,28 +17,25 @@ func getTestGinContext(w *httptest.ResponseRecorder) *gin.Context {
 	return c
 }
 
-// тест на успешную отправку POST запроса и создание короткой ссылки
+// successful POST request
 func TestPostHandler_Success(t *testing.T) {
-	// создаем inMemory хранилище
+	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	// оборачиваем в Handler
 	h := &Handler{Repo: repo}
 
-	// создаем POST запрос содержащий URL
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("https://youtube.com"))
-	// захватываем ответ
+	// create test request
 	w := httptest.NewRecorder()
+	c := getTestGinContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/", strings.NewReader("https://youtube.com"))
 
-	// вызываем хендлер
-	h.PostHandler(w, req)
+	// call handler
+	h.PostHandler(c)
 
-	// получаем ответ
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusCreated {
-		t.Errorf("ожидался статус 201 Created, а получили %d", resp.StatusCode)
+	// checks
+	if w.Code != http.StatusCreated {
+		t.Errorf("ожидался статус 201 Created, а получили %d", w.Code)
 	}
+
 }
 
 // ошибка, если тело запроса пустое
