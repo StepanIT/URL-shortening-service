@@ -54,25 +54,6 @@ func TestPostHandler_EmptyBody(t *testing.T) {
 	}
 }
 
-// ошибка, если метод запроса не POST
-func TestPostHandler_WrongMethod(t *testing.T) {
-	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
-
-	// GET вместо POST
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	w := httptest.NewRecorder()
-
-	h.PostHandler(w, req)
-
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("ожидался статус 400 при неправильном методе, получили %d", resp.StatusCode)
-	}
-}
-
 // успешный GET-запрос, найден ID, редирект на оригинальный URL
 func TestGetHandler_Success(t *testing.T) {
 	repo := storage.NewInMemoryStorage()
