@@ -18,6 +18,9 @@ func Handler() {
 	router.POST("/", h.PostHandler)
 	router.GET("/get/:id", h.GetHandler)
 
+	// created a new route
+	router.POST("/api/shorten", h.PostShortenHandler)
+
 	// запуск сервера
 	router.Run(storage.ServerAddress)
 }
