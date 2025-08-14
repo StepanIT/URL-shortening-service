@@ -9,9 +9,7 @@ import (
 // функция для создания сервера и обработчиков
 func Handler() {
 	// создаём экхемпляр хранилища
-	repo := &storage.InMemoryStorage{
-		Data: make(map[string]string),
-	}
+	repo := storage.NewInMemoryStorage()
 	// создаём обработчик, передаём ему хранилище через интерфейс
 	h := &handlers.Handler{Repo: repo}
 
