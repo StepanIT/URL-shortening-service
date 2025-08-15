@@ -2,7 +2,6 @@ package server
 
 import (
 	"log"
-	"os"
 
 	config "github.com/StepanIT/URL-shortening-service"
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/handlers"
@@ -24,7 +23,7 @@ func Handler() {
 	var repo storage.Repositories
 
 	// path to file storage
-	filePath := os.Getenv("FILE_STORAGE_PATH")
+	filePath := cfg.FileStoragePath
 	if filePath != "" {
 		// use FileStorage
 		fs, err := storage.NewFileStorage(filePath)
