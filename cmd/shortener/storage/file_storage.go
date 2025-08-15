@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 )
 
@@ -31,6 +32,7 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 
 // Save saves the URL under the given ID to a file
 func (fs *FileStorage) Save(id string, url string) error {
+	log.Printf("Сохранение в файл %s: %s -> %s", fs.filePath, id, url)
 	fs.data[id] = url
 	return fs.save()
 }
