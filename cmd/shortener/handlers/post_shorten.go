@@ -41,6 +41,7 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 	}{Result: shortURL}
 
 	c.Header("Content-Type", "application/json")
+	c.Writer.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(c.Writer).Encode(resp); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при кодировании JSON"})
 	}
