@@ -56,5 +56,5 @@ func (h *Handler) PostHandler(c *gin.Context) {
 
 	// выводим ответ с кодом 201 и сокращенный URL
 	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
-	c.String(http.StatusCreated, shortURL)
+	c.JSON(http.StatusCreated, gin.H{"result": shortURL})
 }
