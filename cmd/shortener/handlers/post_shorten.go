@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,13 +28,7 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 	}
 
 	// create a full address with a short URL
-	log.Println("базе юрл", h.BaseURL)
-	var shortURL string
-	if h.BaseURL != "" {
-		shortURL = fmt.Sprintf("%s/get/%s", h.BaseURL, id)
-	} else {
-		shortURL = fmt.Sprintf("/get/%s", id)
-	}
+	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
 
 	// encode JSON directly via encoding/json
 	c.Header("Content-Type", "application/json")
