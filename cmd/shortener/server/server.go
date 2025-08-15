@@ -1,6 +1,7 @@
 package server
 
 import (
+	"flag"
 	"log"
 
 	config "github.com/StepanIT/URL-shortening-service"
@@ -11,7 +12,7 @@ import (
 )
 
 // функция для создания сервера и обработчиков
-func Handler(addrFlag, baseFlag, fileFlag string) {
+func Handler() {
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -19,36 +20,21 @@ func Handler(addrFlag, baseFlag, fileFlag string) {
 
 	cfg := config.NewConfig()
 
-	// server address
-	serverAddr := cfg.ServerAddress
-	if serverAddr == "" && addrFlag != "" {
-		serverAddr = addrFlag
-	}
-
-	// base URL
-	baseURL := cfg.BaseURL
-	if baseURL == "" && baseFlag != "" {
-		baseURL = baseFlag
-	}
-
-	// file storage path
-	filePath := cfg.FileStoragePath
-	if filePath == "" && fileFlag != "" {
-		filePath = fileFlag
-	}
+	addr := flag.String("a", cfg.ServerAddress, "server address")
+	base := flag.String("b", cfg.BaseURL, "base URL")
+	file := flag.String("f", cfg.FileStoragePath, "file storage path")
+	flag.Parse()
 
 	// interface for working with storage
 	var repo storage.Repositories
-	if filePath != "" {
-		// use FileStorage
-		fs, err := storage.NewFileStorage(filePath)
+	if *file != "" {
+		fs, err := storage.NewFileStorage(*file)
 		if err != nil {
 			log.Fatalf("Ошибка создания файлового хранилища: %v", err)
 		}
 		repo = fs
-		log.Println("Используется файловое хранилище:", filePath)
+		log.Println("Используется файловое хранилище:", *file)
 	} else {
-		// use in-memory storage
 		repo = storage.NewInMemoryStorage()
 		log.Println("Используется хранилище в памяти")
 	}
@@ -56,10 +42,9 @@ func Handler(addrFlag, baseFlag, fileFlag string) {
 	// создаём обработчик, передаём ему выбранное хранилище через интерфейс и конфиг
 	h := &handlers.Handler{
 		Repo:          repo,
-		BaseURL:       baseURL,
-		ServerAddress: serverAddr,
+		BaseURL:       *base,
+		ServerAddress: *addr,
 	}
-
 	router := gin.Default()
 
 	router.POST("/", h.PostHandler)
@@ -69,5 +54,5 @@ func Handler(addrFlag, baseFlag, fileFlag string) {
 	router.POST("/api/shorten", h.PostShortenHandler)
 
 	// запуск сервера
-	router.Run(serverAddr)
+	router.Run(*addr)
 }
