@@ -1,10 +1,8 @@
 package server
 
 import (
-	"flag"
 	"log"
 
-	config "github.com/StepanIT/URL-shortening-service"
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/handlers"
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
 	"github.com/gin-gonic/gin"
@@ -12,28 +10,21 @@ import (
 )
 
 // функция для создания сервера и обработчиков
-func Handler() {
+func Handler(addr, baseURL, filePath string) {
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
 
-	cfg := config.NewConfig()
-
-	addr := flag.String("a", cfg.ServerAddress, "server address")
-	base := flag.String("b", cfg.BaseURL, "base URL")
-	file := flag.String("f", cfg.FileStoragePath, "file storage path")
-	flag.Parse()
-
 	// interface for working with storage
 	var repo storage.Repositories
-	if *file != "" {
-		fs, err := storage.NewFileStorage(*file)
+	if filePath != "" {
+		fs, err := storage.NewFileStorage(filePath)
 		if err != nil {
 			log.Fatalf("Ошибка создания файлового хранилища: %v", err)
 		}
 		repo = fs
-		log.Println("Используется файловое хранилище:", *file)
+		log.Println("Используется файловое хранилище:", filePath)
 	} else {
 		repo = storage.NewInMemoryStorage()
 		log.Println("Используется хранилище в памяти")
@@ -42,8 +33,8 @@ func Handler() {
 	// создаём обработчик, передаём ему выбранное хранилище через интерфейс и конфиг
 	h := &handlers.Handler{
 		Repo:          repo,
-		BaseURL:       *base,
-		ServerAddress: *addr,
+		BaseURL:       baseURL,
+		ServerAddress: addr,
 	}
 	router := gin.Default()
 
@@ -54,5 +45,5 @@ func Handler() {
 	router.POST("/api/shorten", h.PostShortenHandler)
 
 	// запуск сервера
-	router.Run(*addr)
+	router.Run(addr)
 }
