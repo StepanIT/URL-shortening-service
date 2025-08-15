@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"os"
 
 	config "github.com/StepanIT/URL-shortening-service"
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/handlers"
@@ -19,9 +20,26 @@ func Handler() {
 
 	cfg := config.NewConfig()
 
-	// создаём экхемпляр хранилища
-	repo := storage.NewInMemoryStorage()
-	// создаём обработчик, передаём ему хранилище через интерфейс и конфиг
+	// interface for working with storage
+	var repo storage.Repositories
+
+	// path to file storage
+	filePath := os.Getenv("FILE_STORAGE_PATH")
+	if filePath != "" {
+		// use FileStorage
+		fs, err := storage.NewFileStorage(filePath)
+		if err != nil {
+			log.Fatalf("Ошибка создания файлового хранилища: %v", err)
+		}
+		repo = fs
+		log.Println("Используется файловое хранилище:", filePath)
+	} else {
+		// use in-memory storage
+		repo = storage.NewInMemoryStorage()
+		log.Println("Используется хранилище в памяти")
+	}
+
+	// создаём обработчик, передаём ему выбранное хранилище через интерфейс и конфиг
 	h := &handlers.Handler{
 		Repo:          repo,
 		BaseURL:       cfg.BaseURL,

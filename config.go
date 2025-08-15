@@ -9,8 +9,9 @@ import (
 
 // structure for storing server settings
 type Config struct {
-	ServerAddress string
-	BaseURL       string
+	ServerAddress   string
+	BaseURL         string
+	FileStoragePath string
 }
 
 // create a configuration by loading environment variables from .env
@@ -21,8 +22,9 @@ func NewConfig() *Config {
 	}
 
 	return &Config{
-		ServerAddress: getEnv("SERVER_ADDRESS", "localhost:8080"),
-		BaseURL:       getEnv("BASE_URL", "http://localhost:8080"),
+		ServerAddress:   getEnv("SERVER_ADDRESS", "localhost:8080"),
+		BaseURL:         getEnv("BASE_URL", "http://localhost:8080"),
+		FileStoragePath: os.Getenv("FILE_STORAGE_PATH"),
 	}
 }
 

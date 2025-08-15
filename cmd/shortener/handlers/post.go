@@ -64,5 +64,4 @@ func (h *Handler) PostHandler(c *gin.Context) {
 
 	// выводим ответ с кодом 201 и сокращенный URL
 	c.String(http.StatusCreated, shortURL)
-
 }
