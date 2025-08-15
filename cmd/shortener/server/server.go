@@ -23,8 +23,9 @@ func Handler() {
 	repo := storage.NewInMemoryStorage()
 	// создаём обработчик, передаём ему хранилище через интерфейс и конфиг
 	h := &handlers.Handler{
-		Repo:    repo,
-		BaseURL: cfg.BaseURL,
+		Repo:          repo,
+		BaseURL:       cfg.BaseURL,
+		ServerAddress: cfg.ServerAddress,
 	}
 
 	router := gin.Default()
