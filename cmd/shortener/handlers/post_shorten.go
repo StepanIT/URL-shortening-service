@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -35,6 +36,12 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 
 	shortURL := fmt.Sprintf("%s/get/%s", base, id)
 
-	// encode JSON directly via encoding/json
-	c.JSON(http.StatusCreated, gin.H{"result": shortURL})
+	resp := struct {
+		Result string `json:"result"`
+	}{Result: shortURL}
+
+	c.Header("Content-Type", "application/json")
+	if err := json.NewEncoder(c.Writer).Encode(resp); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при кодировании JSON"})
+	}
 }
