@@ -27,8 +27,14 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 		return
 	}
 
+	// сhecking that BaseURL is installed
+	base := h.BaseURL
+	if base == "" {
+		base = "http://localhost:8080"
+	}
+
 	// create a full address with a short URL
-	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
+	shortURL := fmt.Sprintf("%s/get/%s", base, id)
 
 	// encode JSON directly via encoding/json
 	c.Header("Content-Type", "application/json")
