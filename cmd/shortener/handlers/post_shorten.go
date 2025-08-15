@@ -33,10 +33,8 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 		base = "http://localhost:8080"
 	}
 
-	// create a full address with a short URL
 	shortURL := fmt.Sprintf("%s/get/%s", base, id)
 
 	// encode JSON directly via encoding/json
-	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusCreated, gin.H{"result": shortURL})
 }

@@ -60,9 +60,9 @@ func (h *Handler) PostHandler(c *gin.Context) {
 	if base == "" {
 		base = "http://localhost:8080"
 	}
+	shortURL := fmt.Sprintf("%s/get/%s", base, id)
 
 	// выводим ответ с кодом 201 и сокращенный URL
-	shortURL := fmt.Sprintf("%s/get/%s", base, id)
-	c.JSON(http.StatusCreated, gin.H{"result": shortURL})
+	c.String(http.StatusCreated, shortURL)
 
 }
