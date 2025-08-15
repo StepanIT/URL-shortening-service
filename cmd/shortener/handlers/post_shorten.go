@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,7 +29,7 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 	}
 
 	// create a full address with a short URL
-	shortURL := fmt.Sprintf("http://%s/get/%s", storage.ServerAddress, id)
+	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
 
 	// encode JSON directly via encoding/json
 	c.Header("Content-Type", "application/json")

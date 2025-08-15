@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"math/rand"
@@ -12,7 +14,8 @@ import (
 
 // структура с интерфейсом для работы с хранилищем
 type Handler struct {
-	Repo storage.Repositories
+	Repo    storage.Repositories
+	BaseURL string
 }
 
 // функция для генерации ID
@@ -53,6 +56,11 @@ func (h *Handler) PostHandler(c *gin.Context) {
 	}
 
 	// выводим ответ с кодом 201 и сокращенный URL
-	c.String(http.StatusCreated, "http://%s/get/%s", storage.ServerAddress, id)
+	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
+	c.Status(http.StatusCreated)
+
+	json.NewEncoder(c.Writer).Encode(map[string]string{
+		"result": shortURL,
+	})
 
 }
