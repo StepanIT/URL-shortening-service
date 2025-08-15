@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"log"
 	"os"
 
@@ -21,17 +22,36 @@ func NewConfig() *Config {
 		log.Println("No .env file found")
 	}
 
+	// default values
+	defaultServerAddress := "localhost:8080"
+	defaultBaseURL := "http://localhost:8080"
+	defaultFileStoragePath := ""
+
+	// define flags
+	flagServerAddress := flag.String("a", defaultServerAddress, "адрес запуска HTTP-сервера")
+	flagBaseURL := flag.String("b", defaultBaseURL, " базовый адрес результирующего сокращённого URL")
+	flagFileStoragePath := flag.String("f", defaultFileStoragePath, "путь до файла с сокращёнными URL")
+	flag.Parse()
+
+	// get value from ENV or use flag
+	serverAddress := getEnvOrFlag("SERVER_ADDRESS", *flagServerAddress, defaultServerAddress)
+	baseURL := getEnvOrFlag("BASE_URL", *flagBaseURL, defaultBaseURL)
+	fileStoragePath := getEnvOrFlag("FILE_STORAGE_PATH", *flagFileStoragePath, defaultFileStoragePath)
+
 	return &Config{
-		ServerAddress:   getEnv("SERVER_ADDRESS", "localhost:8080"),
-		BaseURL:         getEnv("BASE_URL", "http://localhost:8080"),
-		FileStoragePath: os.Getenv("FILE_STORAGE_PATH"),
+		ServerAddress:   serverAddress,
+		BaseURL:         baseURL,
+		FileStoragePath: fileStoragePath,
 	}
 }
 
 // returns the value of the environment variable key
-func getEnv(key string, defaultVal string) string {
-	if value, exist := os.LookupEnv(key); exist {
+func getEnvOrFlag(envKey string, flagValue string, defaultVal string) string {
+	if value, exist := os.LookupEnv(envKey); exist && value != "" {
 		return value
+	}
+	if flagValue != "" {
+		return flagValue
 	}
 
 	return defaultVal
