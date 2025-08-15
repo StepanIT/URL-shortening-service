@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -57,10 +56,5 @@ func (h *Handler) PostHandler(c *gin.Context) {
 
 	// выводим ответ с кодом 201 и сокращенный URL
 	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
-	c.Status(http.StatusCreated)
-
-	json.NewEncoder(c.Writer).Encode(map[string]string{
-		"result": shortURL,
-	})
-
+	c.String(http.StatusCreated, shortURL)
 }
