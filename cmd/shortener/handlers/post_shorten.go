@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -33,9 +32,5 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 
 	// encode JSON directly via encoding/json
 	c.Header("Content-Type", "application/json")
-	c.Status(http.StatusCreated)
-
-	json.NewEncoder(c.Writer).Encode(map[string]string{
-		"result": shortURL,
-	})
+	c.JSON(http.StatusCreated, gin.H{"result": shortURL})
 }
