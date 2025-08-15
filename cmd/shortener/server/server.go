@@ -11,7 +11,7 @@ import (
 )
 
 // функция для создания сервера и обработчиков
-func Handler() {
+func Handler(addrFlag, baseFlag, fileFlag string) {
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -19,11 +19,26 @@ func Handler() {
 
 	cfg := config.NewConfig()
 
+	// server address
+	serverAddr := cfg.ServerAddress
+	if serverAddr == "" && addrFlag != "" {
+		serverAddr = addrFlag
+	}
+
+	// base URL
+	baseURL := cfg.BaseURL
+	if baseURL == "" && baseFlag != "" {
+		baseURL = baseFlag
+	}
+
+	// file storage path
+	filePath := cfg.FileStoragePath
+	if filePath == "" && fileFlag != "" {
+		filePath = fileFlag
+	}
+
 	// interface for working with storage
 	var repo storage.Repositories
-
-	// path to file storage
-	filePath := cfg.FileStoragePath
 	if filePath != "" {
 		// use FileStorage
 		fs, err := storage.NewFileStorage(filePath)
@@ -41,8 +56,8 @@ func Handler() {
 	// создаём обработчик, передаём ему выбранное хранилище через интерфейс и конфиг
 	h := &handlers.Handler{
 		Repo:          repo,
-		BaseURL:       cfg.BaseURL,
-		ServerAddress: cfg.ServerAddress,
+		BaseURL:       baseURL,
+		ServerAddress: serverAddr,
 	}
 
 	router := gin.Default()
@@ -54,5 +69,5 @@ func Handler() {
 	router.POST("/api/shorten", h.PostShortenHandler)
 
 	// запуск сервера
-	router.Run(cfg.ServerAddress)
+	router.Run(serverAddr)
 }
