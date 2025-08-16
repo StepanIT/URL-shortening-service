@@ -7,16 +7,10 @@ import (
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/handlers"
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 // function for creating server and handlers
 func Handler(cfg *config.Config) {
-	// loads values from .env into the system
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
-
 	// interface for working with storage
 	var repo storage.Repositories
 
