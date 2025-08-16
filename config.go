@@ -23,20 +23,26 @@ func NewConfig() *Config {
 	}
 
 	// default values
-	defaultServerAddress := "localhost:8080"
+	defaultServerAddress := "8080"
 	defaultBaseURL := "http://localhost:8080"
 	defaultFileStoragePath := ""
 
 	// define flags
 	flagServerAddress := flag.String("server-port", defaultServerAddress, "адрес запуска HTTP-сервера")
-	flagBaseURL := flag.String("b", defaultBaseURL, " базовый адрес результирующего сокращённого URL")
+	flagBaseURL := flag.String("b", defaultBaseURL, "базовый адрес результирующего сокращённого URL")
 	flagFileStoragePath := flag.String("file-storage-path", defaultFileStoragePath, "путь до файла с сокращёнными URL")
 	flag.Parse()
 
 	// get value from ENV or use flag
-	serverAddress := getEnvOrFlag("SERVER_ADDRESS", *flagServerAddress, defaultServerAddress)
+	serverPort := getEnvOrFlag("SERVER_PORT", *flagServerAddress, defaultServerAddress)
 	baseURL := getEnvOrFlag("BASE_URL", *flagBaseURL, defaultBaseURL)
 	fileStoragePath := getEnvOrFlag("FILE_STORAGE_PATH", *flagFileStoragePath, defaultFileStoragePath)
+
+	serverAddress := "localhost:" + serverPort
+
+	if baseURL == "" {
+		baseURL = "http://" + serverAddress
+	}
 
 	return &Config{
 		ServerAddress:   serverAddress,
