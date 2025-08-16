@@ -28,13 +28,7 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 		return
 	}
 
-	// сhecking that BaseURL is installed
-	base := h.BaseURL
-	if base == "" {
-		base = "http://localhost:8080"
-	}
-
-	shortURL := fmt.Sprintf("%s/get/%s", base, id)
+	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
 
 	resp := struct {
 		Result string `json:"result"`

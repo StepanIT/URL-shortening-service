@@ -55,12 +55,7 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		return
 	}
 
-	// сhecking that BaseURL is installed
-	base := h.BaseURL
-	if base == "" {
-		base = "http://localhost:8080"
-	}
-	shortURL := fmt.Sprintf("%s/get/%s", base, id)
+	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
 
 	// выводим ответ с кодом 201 и сокращенный URL
 	c.String(http.StatusCreated, shortURL)
