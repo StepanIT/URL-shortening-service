@@ -28,9 +28,9 @@ func NewConfig() *Config {
 	defaultFileStoragePath := ""
 
 	// define flags
-	flagServerAddress := flag.String("a", defaultServerAddress, "адрес запуска HTTP-сервера")
+	flagServerAddress := flag.String("server-port", defaultServerAddress, "адрес запуска HTTP-сервера")
 	flagBaseURL := flag.String("b", defaultBaseURL, " базовый адрес результирующего сокращённого URL")
-	flagFileStoragePath := flag.String("f", defaultFileStoragePath, "путь до файла с сокращёнными URL")
+	flagFileStoragePath := flag.String("file-storage-path", defaultFileStoragePath, "путь до файла с сокращёнными URL")
 	flag.Parse()
 
 	// get value from ENV or use flag
