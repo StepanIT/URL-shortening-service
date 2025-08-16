@@ -7,59 +7,49 @@ import (
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/handlers"
 	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
+// function for creating server and handlers
 func Handler(cfg *config.Config) {
-	// Инициализация хранилища
-	repo, err := initStorage(cfg.FileStoragePath)
-	if err != nil {
-		log.Fatalf("Failed to initialize storage: %v", err)
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
 	}
 
-	// Создание обработчика
-	h := &handlers.Handler{
-		Repo:    repo,
-		BaseURL: cfg.BaseURL,
-	}
+	// interface for working with storage
+	var repo storage.Repositories
 
-	// Настройка роутера
-	router := setupRouter(h)
-
-	// Запуск сервера с логированием
-	log.Printf("Starting server on %s", cfg.ServerAddress)
-	log.Printf("Base URL: %s", cfg.BaseURL)
-	if cfg.FileStoragePath != "" {
-		log.Printf("Using file storage: %s", cfg.FileStoragePath)
-	} else {
-		log.Println("Using in-memory storage")
-	}
-
-	if err := router.Run(cfg.ServerAddress); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
-}
-
-func initStorage(filePath string) (storage.Repositories, error) {
+	// path to file storage
+	filePath := cfg.FileStoragePath
 	if filePath != "" {
+		// use FileStorage
 		fs, err := storage.NewFileStorage(filePath)
 		if err != nil {
-			return nil, err
+			log.Fatalf("Ошибка создания файлового хранилища: %v", err)
 		}
-		return fs, nil
+		repo = fs
+		log.Println("Используется файловое хранилище:", filePath)
+	} else {
+		// use in-memory storage
+		repo = storage.NewInMemoryStorage()
+		log.Println("Используется хранилище в памяти")
 	}
-	return storage.NewInMemoryStorage(), nil
-}
 
-func setupRouter(h *handlers.Handler) *gin.Engine {
+	// pass the selected storage and config to the handler
+	h := &handlers.Handler{
+		Repo:          repo,
+		BaseURL:       cfg.BaseURL,
+		ServerAddress: cfg.ServerAddress,
+	}
+
+	// setting up GIN routes
 	router := gin.Default()
 
-	// API v1
-	v1 := router.Group("/")
-	{
-		v1.POST("/", h.PostHandler)                   // TEXT → URL
-		v1.GET("/get/:id", h.GetHandler)              // Редирект
-		v1.POST("/api/shorten", h.PostShortenHandler) // JSON → URL
-	}
+	router.POST("/", h.PostHandler)
+	router.GET("/get/:id", h.GetHandler)
+	router.POST("/api/shorten", h.PostShortenHandler)
 
-	return router
+	// starting the server
+	router.Run(cfg.ServerAddress)
 }

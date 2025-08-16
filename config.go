@@ -4,59 +4,55 @@ import (
 	"flag"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/joho/godotenv"
 )
 
+// structure for storing server settings
 type Config struct {
 	ServerAddress   string
 	BaseURL         string
 	FileStoragePath string
 }
 
+// create a configuration by loading environment variables from .env
 func NewConfig() *Config {
-	// Загрузка .env файла (игнорируем ошибку, если файла нет)
-	_ = godotenv.Load()
-
-	// Установка значений по умолчанию
-	defaults := map[string]string{
-		"SERVER_ADDRESS":    "localhost:8080",
-		"BASE_URL":          "http://localhost:8080",
-		"FILE_STORAGE_PATH": "",
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
 	}
 
-	// Определение флагов командной строки
-	flags := map[string]*string{
-		"a": flag.String("a", defaults["SERVER_ADDRESS"], "HTTP server address"),
-		"b": flag.String("b", defaults["BASE_URL"], "Base URL for shortened links"),
-		"f": flag.String("f", defaults["FILE_STORAGE_PATH"], "Path to storage file"),
-	}
+	// default values
+	defaultServerAddress := "localhost:8080"
+	defaultBaseURL := "http://localhost:8080"
+	defaultFileStoragePath := ""
+
+	// define flags
+	flagServerAddress := flag.String("a", defaultServerAddress, "адрес запуска HTTP-сервера")
+	flagBaseURL := flag.String("b", defaultBaseURL, " базовый адрес результирующего сокращённого URL")
+	flagFileStoragePath := flag.String("f", defaultFileStoragePath, "путь до файла с сокращёнными URL")
 	flag.Parse()
 
-	// Получение финальных значений (env > flags > defaults)
-	cfg := &Config{
-		ServerAddress:   getValue("SERVER_ADDRESS", flags["a"], defaults["SERVER_ADDRESS"]),
-		BaseURL:         getValue("BASE_URL", flags["b"], defaults["BASE_URL"]),
-		FileStoragePath: getValue("FILE_STORAGE_PATH", flags["f"], defaults["FILE_STORAGE_PATH"]),
-	}
+	// get value from ENV or use flag
+	serverAddress := getEnvOrFlag("SERVER_ADDRESS", *flagServerAddress, defaultServerAddress)
+	baseURL := getEnvOrFlag("BASE_URL", *flagBaseURL, defaultBaseURL)
+	fileStoragePath := getEnvOrFlag("FILE_STORAGE_PATH", *flagFileStoragePath, defaultFileStoragePath)
 
-	// Нормализация адреса сервера (добавляем : если нужно)
-	if !strings.Contains(cfg.ServerAddress, ":") {
-		cfg.ServerAddress = ":" + cfg.ServerAddress
+	return &Config{
+		ServerAddress:   serverAddress,
+		BaseURL:         baseURL,
+		FileStoragePath: fileStoragePath,
 	}
-
-	log.Printf("Config loaded: %+v", cfg)
-	return cfg
 }
 
-func getValue(envKey string, flagValue *string, defaultValue string) string {
-	// Приоритет: ENV > Flag > Default
-	if val, exists := os.LookupEnv(envKey); exists {
-		return val
+// returns the value of the environment variable key
+func getEnvOrFlag(envKey string, flagValue string, defaultVal string) string {
+	if value, exist := os.LookupEnv(envKey); exist && value != "" {
+		return value
 	}
-	if flagValue != nil && *flagValue != "" {
-		return *flagValue
+	if flagValue != "" {
+		return flagValue
 	}
-	return defaultValue
+
+	return defaultVal
 }
