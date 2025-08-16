@@ -23,7 +23,7 @@ func NewConfig() *Config {
 	}
 
 	// default values
-	defaultServerAddress := "localhost:8080"
+	defaultServerAddress := ":8080"
 	defaultBaseURL := "http://localhost:8080"
 	defaultFileStoragePath := ""
 
@@ -34,7 +34,7 @@ func NewConfig() *Config {
 	flag.Parse()
 
 	// get value from ENV or use flag
-	serverAddress := "localhost:" + getEnvOrFlag("SERVER_PORT", *flagServerAddress, defaultFileStoragePath)
+	serverAddress := "localhost" + getEnvOrFlag("SERVER_PORT", *flagServerAddress, defaultFileStoragePath)
 	baseURL := getEnvOrFlag("BASE_URL", *flagBaseURL, defaultBaseURL)
 	fileStoragePath := getEnvOrFlag("FILE_STORAGE_PATH", *flagFileStoragePath, defaultFileStoragePath)
 
