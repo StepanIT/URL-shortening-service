@@ -110,3 +110,49 @@ func TestGetHandler_NotFound(t *testing.T) {
 		t.Errorf("ожидался статус 404 Not Found, получили %d", w.Code)
 	}
 }
+
+// successful request
+func TestPostShortenHandler_Success(t *testing.T) {
+	// create inMemory storage
+	repo := storage.NewInMemoryStorage()
+	h := &Handler{Repo: repo}
+
+	// create test request
+	w := httptest.NewRecorder()
+	c := getTestGinContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/shorten", strings.NewReader(`{"url":"https://youtube.com"}`))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	// call handler
+	h.PostShortenHandler(c)
+
+	// checks
+	if w.Code != http.StatusCreated {
+		t.Errorf("ожидался статус 201 Created, а получили %d", w.Code)
+	}
+
+	if !strings.Contains(w.Body.String(), `"result":"http://`) {
+		t.Errorf("ожидался JSON с полем result, получили %s", w.Body.String())
+	}
+}
+
+// empty URL in request
+func TestPostShortenHandler_EmptyURL(t *testing.T) {
+	// create inMemory storage
+	repo := storage.NewInMemoryStorage()
+	h := &Handler{Repo: repo}
+
+	// create test request
+	w := httptest.NewRecorder()
+	c := getTestGinContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/shorten", strings.NewReader(`{"url":""}`))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	// call handler
+	h.PostShortenHandler(c)
+
+	// checks
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("ожидался статус 400 Bad Request, получили %d", w.Code)
+	}
+}
