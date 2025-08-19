@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 
-	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
+	"github.com/StepanIT/URL-shortening-service/internal/storage"
 	"github.com/gin-gonic/gin"
 )
 

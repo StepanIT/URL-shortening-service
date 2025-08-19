@@ -2,7 +2,16 @@ package config
 
 import (
 	"flag"
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
+)
+
+const (
+	defaultServerAddress   = "localhost:8080"
+	defaultBaseURL         = "http://localhost:8080"
+	defaultFileStoragePath = ""
 )
 
 // structure for storing server settings
@@ -14,10 +23,10 @@ type Config struct {
 
 // create a configuration by loading environment variables from .env
 func NewConfig() *Config {
-	// default values
-	defaultServerAddress := "localhost:8080"
-	defaultBaseURL := "http://localhost:8080"
-	defaultFileStoragePath := ""
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
 
 	// define flags
 	flagServerAddress := flag.String("a", defaultServerAddress, "адрес запуска HTTP-сервера")
