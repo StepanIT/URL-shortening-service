@@ -14,6 +14,10 @@ func Run() error {
 	cfg := config.NewConfig()
 	log.Printf("Starting with config: %+v", cfg)
 
+	if cfg.BaseURL == "" {
+		cfg.BaseURL = "http://" + cfg.ServerAddress
+	}
+
 	// path to file storage
 	var repo storage.URLShortenerRepositories
 	var err error
