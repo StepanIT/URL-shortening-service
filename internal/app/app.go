@@ -14,10 +14,6 @@ func Run() error {
 	cfg := config.NewConfig()
 	log.Printf("Starting with config: %+v", cfg)
 
-	if cfg.BaseURL == "" {
-		cfg.BaseURL = "http://" + cfg.ServerAddress
-	}
-
 	// path to file storage
 	var repo storage.URLShortenerRepositories
 	var err error
@@ -34,7 +30,7 @@ func Run() error {
 		log.Println("Using in-memory storage")
 	}
 
-	log.Printf("Starting server on %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, cfg.FileStoragePath)
+	log.Printf("Starting server on %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, repo)
 
 	// launch the server with all dependencies
 	err = server.Handler(repo, cfg.BaseURL, cfg.ServerAddress)
