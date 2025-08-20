@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,7 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 		return
 	}
 
+	log.Println("base URL", h.BaseURL)
 	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
 
 	resp := struct {

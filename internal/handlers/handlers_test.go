@@ -21,7 +21,10 @@ func getTestGinContext(w *httptest.ResponseRecorder) *gin.Context {
 func TestPostHandler_Success(t *testing.T) {
 	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -42,7 +45,10 @@ func TestPostHandler_Success(t *testing.T) {
 func TestPostHandler_EmptyBody(t *testing.T) {
 	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -67,7 +73,10 @@ func TestGetHandler_Success(t *testing.T) {
 
 	// save id and url
 	repo.Save(id, url)
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -94,7 +103,10 @@ func TestGetHandler_Success(t *testing.T) {
 func TestGetHandler_NotFound(t *testing.T) {
 	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -115,7 +127,10 @@ func TestGetHandler_NotFound(t *testing.T) {
 func TestPostShortenHandler_Success(t *testing.T) {
 	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -140,7 +155,10 @@ func TestPostShortenHandler_Success(t *testing.T) {
 func TestPostShortenHandler_EmptyURL(t *testing.T) {
 	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
