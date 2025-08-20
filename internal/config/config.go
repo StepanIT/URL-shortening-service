@@ -27,7 +27,6 @@ func NewConfig() *Config {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
-
 	// define flags
 	flagServerAddress := flag.String("a", defaultServerAddress, "адрес запуска HTTP-сервера")
 	flagBaseURL := flag.String("b", defaultBaseURL, " базовый адрес результирующего сокращённого URL")

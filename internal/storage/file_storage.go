@@ -3,8 +3,6 @@ package storage
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"log"
 	"os"
 )
@@ -48,46 +46,29 @@ func (fs *FileStorage) Get(id string) (string, error) {
 
 // save writes all pairs of id and url
 func (fs *FileStorage) save() error {
-	file, err := os.Create(fs.filePath)
+	// convert map to JSON
+	data, err := json.Marshal(fs.data)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
-	for id, url := range fs.data {
-		// each entry as a separate JSON object in a row
-		line := fmt.Sprintf(`{"id":"%s","url":"%s"}`+"\n", id, url)
-		if _, err := file.WriteString(line); err != nil {
-			return err
-		}
-	}
-	return nil
+	// write the JSON to the file
+	return os.WriteFile(fs.filePath, data, 0644)
 }
 
 // load reads data from a file and fills the map
 func (fs *FileStorage) load() error {
-	file, err := os.Open(fs.filePath)
+	// Read the entire file
+	data, err := os.ReadFile(fs.filePath)
 	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	fs.data = make(map[string]string)
-
-	var id, url string
-	decoder := json.NewDecoder(file)
-	for {
-		var entry map[string]string
-		if err := decoder.Decode(&entry); err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-		id = entry["id"]
-		url = entry["url"]
-		fs.data[id] = url
+		return err // This will include os.ErrNotExist
 	}
 
-	return nil
+	// If the file is empty, do nothing
+	if len(data) == 0 {
+		return nil
+	}
+
+	// Unmarshal JSON into the map
+	return json.Unmarshal(data, &fs.data)
 }
