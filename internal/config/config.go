@@ -33,11 +33,18 @@ func NewConfig() *Config {
 	flagFileStoragePath := flag.String("f", defaultFileStoragePath, "путь до файла с сокращёнными URL")
 	flag.Parse()
 
-	return &Config{
+	cfg := &Config{
 		ServerAddress:   getEnvOrFlag("SERVER_ADDRESS", flagServerAddress, defaultServerAddress),
-		BaseURL:         getEnvOrFlag("BASE_URL", flagBaseURL, defaultBaseURL),
+		BaseURL:         getEnvOrFlag("BASE_URL", flagBaseURL, ""),
 		FileStoragePath: getEnvOrFlag("FILE_STORAGE_PATH", flagFileStoragePath, defaultFileStoragePath),
 	}
+
+	// если BaseURL не задан, формируем из ServerAddress
+	if cfg.BaseURL == "" {
+		cfg.BaseURL = "http://" + cfg.ServerAddress
+	}
+
+	return cfg
 }
 
 // returns the value of the environment variable key
