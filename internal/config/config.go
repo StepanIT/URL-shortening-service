@@ -42,11 +42,11 @@ func NewConfig() *Config {
 
 // returns the value of the environment variable key
 func getEnvOrFlag(envKey string, flagValue *string, defaultVal string) string {
-	if value, exists := os.LookupEnv(envKey); exists && value != "" {
-		return value
-	}
 	if flagValue != nil && *flagValue != defaultVal {
 		return *flagValue
+	}
+	if value, exists := os.LookupEnv(envKey); exists && value != "" {
+		return value
 	}
 	return defaultVal
 }
