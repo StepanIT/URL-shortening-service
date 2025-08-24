@@ -1,18 +1,21 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"math/rand"
 	"net/http"
 
-	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
+	"github.com/StepanIT/URL-shortening-service/internal/storage"
 	"github.com/gin-gonic/gin"
 )
 
 // структура с интерфейсом для работы с хранилищем
 type Handler struct {
-	Repo storage.Repositories
+	Repo          storage.URLShortenerRepositories
+	BaseURL       string
+	ServerAddress string
 }
 
 // функция для генерации ID
@@ -52,7 +55,8 @@ func (h *Handler) PostHandler(c *gin.Context) {
 		return
 	}
 
-	// выводим ответ с кодом 201 и сокращенный URL
-	c.String(http.StatusCreated, "http://%s/get/%s", storage.ServerAddress, id)
+	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
 
+	// выводим ответ с кодом 201 и сокращенный URL
+	c.String(http.StatusCreated, shortURL)
 }
