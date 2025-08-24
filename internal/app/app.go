@@ -33,7 +33,7 @@ func Run() error {
 	log.Printf("Starting server on %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, repo)
 
 	// launch the server with all dependencies
-	err = server.Handler(repo, cfg.BaseURL, cfg.ServerAddress)
+	err = server.StartServer(repo, cfg.BaseURL, cfg.ServerAddress)
 	if err != nil {
 		return fmt.Errorf("server error: %w", err)
 	}

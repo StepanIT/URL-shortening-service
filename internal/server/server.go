@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Handler(repo storage.URLShortenerRepositories, baseURL string, serverAddress string) error {
+func StartServer(repo storage.URLShortenerRepositories, baseURL string, serverAddress string) error {
 
 	// pass the selected storage and config to the handler
 	h := &handlers.Handler{
