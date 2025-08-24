@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/StepanIT/URL-shortening-service/internal/handlers"
+	"github.com/StepanIT/URL-shortening-service/internal/middleware"
 	"github.com/StepanIT/URL-shortening-service/internal/storage"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,9 @@ func StartServer(repo storage.URLShortenerRepositories, baseURL string, serverAd
 
 	// setting up GIN routes
 	router := gin.Default()
+
+	router.Use(middleware.GzipDecompress())
+	router.Use(middleware.GzipCompress())
 
 	router.POST("/", h.PostHandler)
 	router.GET("/get/:id", h.GetHandler)
