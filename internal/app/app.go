@@ -30,10 +30,10 @@ func Run() error {
 		log.Println("Using in-memory storage")
 	}
 
-	log.Printf("Starting server on %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, repo)
+	log.Printf("Starting server on %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, repo, cfg.SecretKey)
 
 	// launch the server with all dependencies
-	err = server.StartServer(repo, cfg.BaseURL, cfg.ServerAddress)
+	err = server.StartServer(repo, cfg.BaseURL, cfg.ServerAddress, cfg.SecretKey)
 	if err != nil {
 		return fmt.Errorf("server error: %w", err)
 	}

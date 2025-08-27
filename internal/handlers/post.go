@@ -16,6 +16,7 @@ type Handler struct {
 	Repo          storage.URLShortenerRepositories
 	BaseURL       string
 	ServerAddress string
+	SecretKey     string
 }
 
 // функция для генерации ID
