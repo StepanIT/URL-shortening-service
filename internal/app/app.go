@@ -1,10 +1,12 @@
 package app
 
 import (
+	"encoding/gob"
 	"fmt"
 	"log"
 
 	"github.com/StepanIT/URL-shortening-service/internal/config"
+	"github.com/StepanIT/URL-shortening-service/internal/handlers"
 	"github.com/StepanIT/URL-shortening-service/internal/server"
 	"github.com/StepanIT/URL-shortening-service/internal/storage"
 )
@@ -29,8 +31,13 @@ func Run() error {
 		repo = storage.NewInMemoryStorage()
 		log.Println("Using in-memory storage")
 	}
+	name := "Ignat"
+	u := &handlers.User{
+		Name: name,
+	}
 
-	log.Printf("Starting server on %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, repo, cfg.SecretKey)
+	gob.Register(u)
+	log.Printf("Starting server on %s, %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, repo, cfg.SecretKey)
 
 	// launch the server with all dependencies
 	err = server.StartServer(repo, cfg.BaseURL, cfg.ServerAddress, cfg.SecretKey)
