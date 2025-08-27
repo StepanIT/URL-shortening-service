@@ -30,7 +30,7 @@ func (h *Handler) SetCookieHandler(c *gin.Context) {
 	}
 
 	cookie := http.Cookie{
-		Name:     "userID",
+		Name:     "St",
 		Value:    buf.String(),
 		Path:     "/",
 		MaxAge:   3600,

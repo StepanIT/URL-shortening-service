@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"log"
 	"net/http"
 )
 
@@ -26,6 +27,7 @@ func Write(w http.ResponseWriter, cookie http.Cookie) error {
 }
 
 func WriteSigned(w http.ResponseWriter, cookie http.Cookie, secretKey []byte) error {
+	log.Printf("Original cookie value: %s", cookie.Value)
 	cookie.Value = base64.URLEncoding.EncodeToString([]byte(cookie.Value))
 
 	mac := hmac.New(sha256.New, secretKey)
@@ -34,6 +36,7 @@ func WriteSigned(w http.ResponseWriter, cookie http.Cookie, secretKey []byte) er
 	signature := mac.Sum(nil)
 
 	cookie.Value = string(signature) + cookie.Value
+	log.Printf("Signed cookie value: %s", cookie.Value)
 
 	return Write(w, cookie)
 }
