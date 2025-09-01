@@ -53,7 +53,7 @@ func Auth(secretKey string) gin.HandlerFunc {
 				Path:     "/",
 				MaxAge:   3600 * 24 * 30,
 				HttpOnly: true,
-				Secure:   true,
+				Secure:   false,
 				SameSite: http.SameSiteLaxMode,
 			}
 
