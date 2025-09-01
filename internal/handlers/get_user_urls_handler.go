@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -26,24 +25,18 @@ func (h *Handler) GetUserURLsHandler(c *gin.Context) {
 		return
 	}
 
-	// Если у пользователя нет ссылок, возвращаем 204
-	if len(userURLs) == 0 {
-		c.Status(http.StatusNoContent)
-		return
-	}
-
 	// Формируем ответ в нужном формате
-	var response []struct {
+	response := make([]struct {
 		ShortURL    string `json:"short_url"`
 		OriginalURL string `json:"original_url"`
-	}
+	}, 0, len(userURLs))
 
 	for shortID, originalURL := range userURLs {
 		response = append(response, struct {
 			ShortURL    string `json:"short_url"`
 			OriginalURL string `json:"original_url"`
 		}{
-			ShortURL:    fmt.Sprintf("%s/%s", h.BaseURL, shortID),
+			ShortURL:    h.BaseURL + "/get/" + shortID,
 			OriginalURL: originalURL,
 		})
 	}

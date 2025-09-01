@@ -1,12 +1,9 @@
 package middleware
 
 import (
-	"bytes"
-	"encoding/gob"
 	"log"
 	"math/rand"
 	"net/http"
-	"strings"
 
 	"github.com/StepanIT/URL-shortening-service/internal/cookies"
 	"github.com/gin-gonic/gin"
@@ -29,51 +26,30 @@ func generateUserID() string {
 // Auth middleware проверяет и устанавливает куку пользователя
 func Auth(secretKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var user User
 		var userID string
 		var needSetCookie bool
 
-		// Пытаемся прочитать и верифицировать куку
+		// Пытаемся прочитать подписанную куку
 		cookieValue, err := cookies.ReadSigned(c.Request, "userID", []byte(secretKey))
-		if err != nil {
-			// Если куки нет или она невалидна, создаем нового пользователя
-			log.Println("Cookie invalid or not found, generating new user ID")
+		if err != nil || cookieValue == "" {
+			// Если нет куки или подпись невалидна, создаём новый userID
 			userID = generateUserID()
-			user = User{ID: userID}
 			needSetCookie = true
+			log.Println("Cookie invalid or not found, generating new user ID:", userID)
 		} else {
-			// Если кука есть, пробуем декодировать из Gob
-			reader := strings.NewReader(cookieValue)
-			if err := gob.NewDecoder(reader).Decode(&user); err != nil {
-				log.Printf("Failed to decode user from cookie: %v", err)
-				// Если не удалось декодировать, создаем нового пользователя
-				userID = generateUserID()
-				user = User{ID: userID}
-				needSetCookie = true
-			} else {
-				userID = user.ID
-				log.Printf("User authenticated: %s", userID)
-			}
+			userID = cookieValue
+			log.Println("User authenticated:", userID)
 		}
 
-		// Сохраняем userID в контексте Gin, чтобы хендлеры могли его использовать
+		// Сохраняем userID в контексте Gin
 		c.Set("userID", userID)
 
 		// Если куки не было или она была невалидна, устанавливаем новую
 		if needSetCookie {
-			// Кодируем структуру User в Gob
-			var buf bytes.Buffer
-			err := gob.NewEncoder(&buf).Encode(&user)
-			if err != nil {
-				log.Printf("Failed to encode user for cookie: %v", err)
-				c.Next()
-				return
-			}
 
-			// Создаем и устанавливаем куку
 			cookie := http.Cookie{
 				Name:     "userID",
-				Value:    buf.String(),
+				Value:    userID,
 				Path:     "/",
 				MaxAge:   3600 * 24 * 30,
 				HttpOnly: true,
