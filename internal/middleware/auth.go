@@ -31,7 +31,7 @@ func Auth(secretKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user User
 		var userID string
-		var needSetCookie bool = false
+		var needSetCookie bool
 
 		// Пытаемся прочитать и верифицировать куку
 		cookieValue, err := cookies.ReadSigned(c.Request, "userID", []byte(secretKey))
