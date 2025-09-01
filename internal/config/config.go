@@ -12,7 +12,6 @@ const (
 	defaultServerAddress   = "localhost:8080"
 	defaultBaseURL         = "http://localhost:8080"
 	defaultFileStoragePath = ""
-	defaultSecretKey       = ""
 )
 
 // structure for storing server settings
@@ -33,14 +32,12 @@ func NewConfig() *Config {
 	flagServerAddress := flag.String("a", defaultServerAddress, "адрес запуска HTTP-сервера")
 	flagBaseURL := flag.String("b", defaultBaseURL, " базовый адрес результирующего сокращённого URL")
 	flagFileStoragePath := flag.String("f", defaultFileStoragePath, "путь до файла с сокращёнными URL")
-	flagSecretKey := flag.String("s", defaultSecretKey, "секретный ключ для куки")
 	flag.Parse()
 
 	return &Config{
 		ServerAddress:   getEnvOrFlag("SERVER_ADDRESS", flagServerAddress, defaultServerAddress),
 		BaseURL:         getEnvOrFlag("BASE_URL", flagBaseURL, defaultBaseURL),
 		FileStoragePath: getEnvOrFlag("FILE_STORAGE_PATH", flagFileStoragePath, defaultFileStoragePath),
-		SecretKey:       getEnvOrFlag("COOKIE_SECRET_KEY", flagSecretKey, defaultSecretKey),
 	}
 }
 
