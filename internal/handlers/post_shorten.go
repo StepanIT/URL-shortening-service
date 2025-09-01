@@ -10,6 +10,12 @@ import (
 )
 
 func (h *Handler) PostShortenHandler(c *gin.Context) {
+	// Получаем userID из контекста, установленного middleware
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "user not identified"})
+		return
+	}
 
 	// structure for parsing json
 	var req struct {
@@ -24,7 +30,7 @@ func (h *Handler) PostShortenHandler(c *gin.Context) {
 
 	// generate a short id and save id+url in storage
 	id := generateID()
-	if err := h.Repo.Save(id, req.URL); err != nil {
+	if err := h.Repo.Save(id, req.URL, userID.(string)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при сохранении"})
 		return
 	}

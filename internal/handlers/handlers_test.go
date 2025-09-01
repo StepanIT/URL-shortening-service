@@ -14,6 +14,7 @@ import (
 func getTestGinContext(w *httptest.ResponseRecorder) *gin.Context {
 	gin.SetMode(gin.TestMode)
 	c, _ := gin.CreateTestContext(w)
+	c.Set("userID", "test_user_123")
 	return c
 }
 
@@ -72,7 +73,7 @@ func TestGetHandler_Success(t *testing.T) {
 	url := "https://youtube.com"
 
 	// save id and url
-	repo.Save(id, url)
+	repo.Save(id, url, "test_user_123")
 	h := &Handler{
 		Repo:    repo,
 		BaseURL: "http://localhost:8080",

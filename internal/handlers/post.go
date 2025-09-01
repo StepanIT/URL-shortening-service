@@ -45,11 +45,22 @@ func (h *Handler) PostHandler(c *gin.Context) {
 	// выводим полученный URL
 	log.Println("Получили URL:", LongURL)
 
+	// получаем userID из контекста (установленного middleware аутентификации)
+	userIDValue, exists := c.Get("userID")
+	if !exists {
+		log.Println("UserID not found in context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "ошибка аутентификации"})
+		return
+	}
+
+	userID := userIDValue.(string)
+	log.Printf("Получили URL от пользователя %s: %s", userID, LongURL)
+
 	// получаем ID
 	id := generateID()
 
 	// присваеваем полученный URL к полученному ID
-	err = h.Repo.Save(id, LongURL)
+	err = h.Repo.Save(id, LongURL, userID)
 	log.Println("Присвоенный URL", err)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при сохранении"})

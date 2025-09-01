@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/StepanIT/URL-shortening-service/internal/config"
-	"github.com/StepanIT/URL-shortening-service/internal/handlers"
+	"github.com/StepanIT/URL-shortening-service/internal/middleware"
 	"github.com/StepanIT/URL-shortening-service/internal/server"
 	"github.com/StepanIT/URL-shortening-service/internal/storage"
 )
@@ -31,10 +31,8 @@ func Run() error {
 		repo = storage.NewInMemoryStorage()
 		log.Println("Using in-memory storage")
 	}
-	name := "Ignat"
-	u := &handlers.User{
-		Name: name,
-	}
+	u := &middleware.User{}
+	gob.Register(u)
 
 	gob.Register(u)
 	log.Printf("Starting server on %s, %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, repo, cfg.SecretKey)

@@ -20,14 +20,14 @@ func StartServer(repo storage.URLShortenerRepositories, baseURL string, serverAd
 	// setting up GIN routes
 	router := gin.Default()
 
-	router.GET("/set", h.SetCookieHandler)
-	router.GET("/get", h.GetCookieHandler)
-
 	router.Use(middleware.GzipDecompress())
 	router.Use(middleware.GzipCompress())
+	router.Use(middleware.Auth(secretKey))
+
+	router.GET("/get/:id", h.GetHandler)
+	router.GET("/api/user/urls", h.GetUserURLsHandler)
 
 	router.POST("/", h.PostHandler)
-	router.GET("/get/:id", h.GetHandler)
 	router.POST("/api/shorten", h.PostShortenHandler)
 
 	// starting the server

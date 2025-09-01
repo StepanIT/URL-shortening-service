@@ -7,17 +7,26 @@ import (
 	"os"
 )
 
+// Структура для хранения всех данных в файле
+type fileData struct {
+	URLs  map[string]string `json:"urls"`
+	Users map[string]string `json:"users"`
+}
+
 // structure for storing data in a JSON file
 type FileStorage struct {
 	filePath string
-	data     map[string]string
+	data     *fileData
 }
 
 // constructor to create a new FileStorage instance
 func NewFileStorage(filePath string) (*FileStorage, error) {
 	fs := &FileStorage{
 		filePath: filePath,
-		data:     make(map[string]string),
+		data: &fileData{
+			URLs:  make(map[string]string),
+			Users: make(map[string]string),
+		},
 	}
 
 	// trying to load data from a file
@@ -29,19 +38,34 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 }
 
 // Save saves the URL under the given ID to a file
-func (fs *FileStorage) Save(id string, url string) error {
+func (fs *FileStorage) Save(id string, url, userID string) error {
 	log.Printf("Сохранение в файл %s: %s -> %s", fs.filePath, id, url)
-	fs.data[id] = url
+	fs.data.URLs[id] = url
+	fs.data.Users[id] = userID
 	return fs.save()
 }
 
 // returns URL by ID or error
 func (fs *FileStorage) Get(id string) (string, error) {
-	url, ok := fs.data[id]
+	url, ok := fs.data.URLs[id]
 	if !ok {
 		return "", errors.New("url not found")
 	}
 	return url, nil
+}
+
+func (fs *FileStorage) GetAllByUser(userID string) (map[string]string, error) {
+	result := make(map[string]string)
+
+	// ищем все shortID, которые принадлежат пользователю
+	for shortID, uID := range fs.data.Users {
+		if uID == userID {
+			// если нашли, добавляем в результат пару shortID -> originalURL
+			result[shortID] = fs.data.URLs[shortID]
+		}
+	}
+
+	return result, nil
 }
 
 // save writes all pairs of id and url
