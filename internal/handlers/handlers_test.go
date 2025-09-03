@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
+	"github.com/StepanIT/URL-shortening-service/internal/storage"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,6 +14,7 @@ import (
 func getTestGinContext(w *httptest.ResponseRecorder) *gin.Context {
 	gin.SetMode(gin.TestMode)
 	c, _ := gin.CreateTestContext(w)
+	c.Set("userID", "test_user_123")
 	return c
 }
 
@@ -21,7 +22,10 @@ func getTestGinContext(w *httptest.ResponseRecorder) *gin.Context {
 func TestPostHandler_Success(t *testing.T) {
 	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -42,7 +46,10 @@ func TestPostHandler_Success(t *testing.T) {
 func TestPostHandler_EmptyBody(t *testing.T) {
 	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -66,8 +73,11 @@ func TestGetHandler_Success(t *testing.T) {
 	url := "https://youtube.com"
 
 	// save id and url
-	repo.Save(id, url)
-	h := &Handler{Repo: repo}
+	repo.Save(id, url, "test_user_123")
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -94,7 +104,10 @@ func TestGetHandler_Success(t *testing.T) {
 func TestGetHandler_NotFound(t *testing.T) {
 	// create inMemory storage
 	repo := storage.NewInMemoryStorage()
-	h := &Handler{Repo: repo}
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
 
 	// create test request
 	w := httptest.NewRecorder()
@@ -108,5 +121,57 @@ func TestGetHandler_NotFound(t *testing.T) {
 	// checks
 	if w.Code != http.StatusNotFound {
 		t.Errorf("ожидался статус 404 Not Found, получили %d", w.Code)
+	}
+}
+
+// successful request
+func TestPostShortenHandler_Success(t *testing.T) {
+	// create inMemory storage
+	repo := storage.NewInMemoryStorage()
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
+
+	// create test request
+	w := httptest.NewRecorder()
+	c := getTestGinContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/shorten", strings.NewReader(`{"url":"https://youtube.com"}`))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	// call handler
+	h.PostShortenHandler(c)
+
+	// checks
+	if w.Code != http.StatusCreated {
+		t.Errorf("ожидался статус 201 Created, а получили %d", w.Code)
+	}
+
+	if !strings.Contains(w.Body.String(), `"result":"http://`) {
+		t.Errorf("ожидался JSON с полем result, получили %s", w.Body.String())
+	}
+}
+
+// empty URL in request
+func TestPostShortenHandler_EmptyURL(t *testing.T) {
+	// create inMemory storage
+	repo := storage.NewInMemoryStorage()
+	h := &Handler{
+		Repo:    repo,
+		BaseURL: "http://localhost:8080",
+	}
+
+	// create test request
+	w := httptest.NewRecorder()
+	c := getTestGinContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/shorten", strings.NewReader(`{"url":""}`))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	// call handler
+	h.PostShortenHandler(c)
+
+	// checks
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("ожидался статус 400 Bad Request, получили %d", w.Code)
 	}
 }
