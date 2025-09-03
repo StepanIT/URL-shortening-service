@@ -11,11 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type respPair struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
-
 // структура с интерфейсом для работы с хранилищем
 type Handler struct {
 	Repo          storage.URLShortenerRepositories

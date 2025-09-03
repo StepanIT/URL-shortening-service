@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"log"
 	"net/http"
-	"strings"
 )
 
 var (
@@ -27,15 +27,16 @@ func Write(w http.ResponseWriter, cookie http.Cookie) error {
 }
 
 func WriteSigned(w http.ResponseWriter, cookie http.Cookie, secretKey []byte) error {
-	val := base64.URLEncoding.EncodeToString([]byte(cookie.Value))
+	log.Printf("Original cookie value: %s", cookie.Value)
+	cookie.Value = base64.URLEncoding.EncodeToString([]byte(cookie.Value))
 
 	mac := hmac.New(sha256.New, secretKey)
 	mac.Write([]byte(cookie.Name))
-	mac.Write([]byte(val))
+	mac.Write([]byte(cookie.Value))
 	signature := mac.Sum(nil)
-	signatureStr := base64.URLEncoding.EncodeToString(signature)
 
-	cookie.Value = signatureStr + "." + val
+	cookie.Value = string(signature) + cookie.Value
+	log.Printf("Signed cookie value: %s", cookie.Value)
 
 	return Write(w, cookie)
 }
@@ -55,34 +56,27 @@ func Read(r *http.Request, name string) (string, error) {
 }
 
 func ReadSigned(r *http.Request, name string, secretKey []byte) (string, error) {
-	cookie, err := r.Cookie(name)
+
+	signedValue, err := Read(r, name)
 	if err != nil {
 		return "", err
 	}
 
-	parts := strings.SplitN(cookie.Value, ".", 2)
-	if len(parts) != 2 {
+	if len(signedValue) < sha256.Size {
 		return "", ErrInvalidValue
 	}
 
-	signature, err := base64.URLEncoding.DecodeString(parts[0])
-	if err != nil {
-		return "", ErrInvalidValue
-	}
-
-	value, err := base64.URLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", ErrInvalidValue
-	}
+	signature := signedValue[:sha256.Size]
+	value := signedValue[sha256.Size:]
 
 	mac := hmac.New(sha256.New, secretKey)
 	mac.Write([]byte(name))
-	mac.Write([]byte(parts[1]))
-	expected := mac.Sum(nil)
+	mac.Write([]byte(value))
+	expectSignature := mac.Sum(nil)
 
-	if !hmac.Equal(signature, expected) {
+	if !hmac.Equal([]byte(signature), expectSignature) {
 		return "", ErrInvalidValue
 	}
 
-	return string(value), nil
+	return value, nil
 }

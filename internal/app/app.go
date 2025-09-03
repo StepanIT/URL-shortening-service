@@ -34,7 +34,7 @@ func Run() error {
 	u := &middleware.User{}
 	gob.Register(u)
 
-	log.Printf("Starting server on %s, %s, %+v, %s", cfg.ServerAddress, cfg.BaseURL, repo, cfg.SecretKey)
+	log.Printf("Starting server on %s, %s, %s, %s", cfg.ServerAddress, cfg.BaseURL, repo, cfg.SecretKey)
 
 	// launch the server with all dependencies
 	err = server.StartServer(repo, cfg.BaseURL, cfg.ServerAddress, cfg.SecretKey)
