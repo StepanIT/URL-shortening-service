@@ -1,46 +1,45 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
+// GetUserURLsHandler возвращает все URL пользователя
 func (h *Handler) GetUserURLsHandler(c *gin.Context) {
-	// Получаем userID из контекста
 	userIDValue, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "user not identified"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 		return
 	}
 
 	userID := userIDValue.(string)
 
-	// Используем новый метод хранилища
-	userURLs, err := h.Repo.GetAllByUser(userID)
+	urlsMap, err := h.Repo.GetAllByUser(userID)
 	if err != nil {
-		log.Printf("Error getting user URLs: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch URLs"})
 		return
 	}
 
-	// Формируем ответ в нужном формате
-	response := make([]struct {
+	if len(urlsMap) == 0 {
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	// Преобразуем map в срез объектов для ответа
+	type respPair struct {
 		ShortURL    string `json:"short_url"`
 		OriginalURL string `json:"original_url"`
-	}, 0, len(userURLs))
+	}
 
-	for shortID, originalURL := range userURLs {
-		response = append(response, struct {
-			ShortURL    string `json:"short_url"`
-			OriginalURL string `json:"original_url"`
-		}{
-			ShortURL:    h.BaseURL + "/get/" + shortID,
-			OriginalURL: originalURL,
+	resp := make([]respPair, 0, len(urlsMap))
+	for id, original := range urlsMap {
+		resp = append(resp, respPair{
+			ShortURL:    h.BaseURL + "/get/" + id,
+			OriginalURL: original,
 		})
 	}
 
-	// Устанавливаем правильный Content-Type и возвращаем JSON
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, resp)
 }
