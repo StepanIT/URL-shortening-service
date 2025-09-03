@@ -30,7 +30,7 @@ func Auth(secretKey string) gin.HandlerFunc {
 		var needSetCookie bool
 
 		// Пытаемся прочитать подписанную куку
-		cookieValue, err := cookies.ReadSigned(c.Request, "userID", []byte(secretKey))
+		cookieValue, err := cookies.ReadSigned(c.Request, "userID", secretKey)
 		if err != nil || cookieValue == "" {
 			// Если нет куки или подпись невалидна, создаём новый userID
 			userID = generateUserID()
@@ -58,7 +58,7 @@ func Auth(secretKey string) gin.HandlerFunc {
 			}
 
 			// Подписываем и устанавливаем куку
-			if err := cookies.WriteSigned(c.Writer, cookie, []byte(secretKey)); err != nil {
+			if err := cookies.WriteSigned(c.Writer, cookie, secretKey); err != nil {
 				log.Printf("Failed to set signed cookie: %v", err)
 			} else {
 				log.Printf("New cookie set for user: %s", userID)
