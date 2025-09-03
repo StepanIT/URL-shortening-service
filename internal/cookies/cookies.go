@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -28,17 +27,15 @@ func Write(w http.ResponseWriter, cookie http.Cookie) error {
 }
 
 func WriteSigned(w http.ResponseWriter, cookie http.Cookie, secretKey []byte) error {
-	log.Printf("Original cookie value: %s", cookie.Value)
-	valB64 := base64.URLEncoding.EncodeToString([]byte(cookie.Value))
+	val := base64.URLEncoding.EncodeToString([]byte(cookie.Value))
 
 	mac := hmac.New(sha256.New, secretKey)
 	mac.Write([]byte(cookie.Name))
-	mac.Write([]byte(valB64))
+	mac.Write([]byte(val))
 	signature := mac.Sum(nil)
-	sigB64 := base64.URLEncoding.EncodeToString(signature)
+	signatureStr := base64.URLEncoding.EncodeToString(signature)
 
-	cookie.Value = sigB64 + "." + valB64
-	log.Printf("Signed cookie value: %s", cookie.Value)
+	cookie.Value = signatureStr + "." + val
 
 	return Write(w, cookie)
 }
@@ -58,7 +55,6 @@ func Read(r *http.Request, name string) (string, error) {
 }
 
 func ReadSigned(r *http.Request, name string, secretKey []byte) (string, error) {
-
 	cookie, err := r.Cookie(name)
 	if err != nil {
 		return "", err
@@ -69,27 +65,24 @@ func ReadSigned(r *http.Request, name string, secretKey []byte) (string, error) 
 		return "", ErrInvalidValue
 	}
 
-	sigB64, valB64 := parts[0], parts[1]
-
-	// проверяем подпись
-	valueBytes, err := base64.URLEncoding.DecodeString(valB64)
+	signature, err := base64.URLEncoding.DecodeString(parts[0])
 	if err != nil {
 		return "", ErrInvalidValue
 	}
 
-	signature, err := base64.URLEncoding.DecodeString(sigB64)
+	value, err := base64.URLEncoding.DecodeString(parts[1])
 	if err != nil {
 		return "", ErrInvalidValue
 	}
 
 	mac := hmac.New(sha256.New, secretKey)
-	mac.Write([]byte(cookie.Name))
-	mac.Write([]byte(valB64))
-	expectedSig := mac.Sum(nil)
+	mac.Write([]byte(name))
+	mac.Write([]byte(parts[1]))
+	expected := mac.Sum(nil)
 
-	if !hmac.Equal(signature, expectedSig) {
+	if !hmac.Equal(signature, expected) {
 		return "", ErrInvalidValue
 	}
 
-	return string(valueBytes), nil
+	return string(value), nil
 }
