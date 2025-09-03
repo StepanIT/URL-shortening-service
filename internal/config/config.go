@@ -38,6 +38,7 @@ func NewConfig() *Config {
 		ServerAddress:   getEnvOrFlag("SERVER_ADDRESS", flagServerAddress, defaultServerAddress),
 		BaseURL:         getEnvOrFlag("BASE_URL", flagBaseURL, defaultBaseURL),
 		FileStoragePath: getEnvOrFlag("FILE_STORAGE_PATH", flagFileStoragePath, defaultFileStoragePath),
+		SecretKey:       getEnvOrFlag("SECRET_KEY", nil, "default_secret_key"),
 	}
 }
 
