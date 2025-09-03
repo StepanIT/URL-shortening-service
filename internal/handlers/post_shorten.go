@@ -1,50 +1,34 @@
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) PostShortenHandler(c *gin.Context) {
-	// Получаем userID из контекста, установленного middleware
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "user not identified"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "userID not found"})
 		return
 	}
 
-	// structure for parsing json
 	var req struct {
 		URL string `json:"url"`
 	}
-
-	// parse the request body as JSON and write it to req
-	if err := c.BindJSON(&req); err != nil || req.URL == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный запрос"})
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
-	// generate a short id and save id+url in storage
-	id := generateID()
-	if err := h.Repo.Save(id, req.URL, userID.(string)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при сохранении"})
+	shortID := generateID() // твоя функция генерации короткого ID
+	if err := h.Repo.Save(shortID, req.URL, userID.(string)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot save URL"})
 		return
 	}
 
-	log.Println("base URL", h.BaseURL)
-	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
-
-	resp := struct {
-		Result string `json:"result"`
-	}{Result: shortURL}
-
-	c.Header("Content-Type", "application/json")
-	c.Writer.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(c.Writer).Encode(resp); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при кодировании JSON"})
-	}
+	c.JSON(http.StatusCreated, respPair{
+		ShortURL:    h.BaseURL + "/get/" + shortID,
+		OriginalURL: req.URL,
+	})
 }
