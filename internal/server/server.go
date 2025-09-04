@@ -1,13 +1,15 @@
 package server
 
 import (
+	"database/sql"
+
 	"github.com/StepanIT/URL-shortening-service/internal/handlers"
 	"github.com/StepanIT/URL-shortening-service/internal/middleware"
 	"github.com/StepanIT/URL-shortening-service/internal/storage"
 	"github.com/gin-gonic/gin"
 )
 
-func StartServer(repo storage.URLShortenerRepositories, baseURL string, serverAddress string, secretKey string) error {
+func StartServer(repo storage.URLShortenerRepositories, db *sql.DB, baseURL string, serverAddress string, secretKey string) error {
 
 	// pass the selected storage and config to the handler
 	h := &handlers.Handler{
@@ -16,7 +18,7 @@ func StartServer(repo storage.URLShortenerRepositories, baseURL string, serverAd
 		ServerAddress: serverAddress,
 		SecretKey:     secretKey,
 	}
-
+	pingHandler := handlers.NewPingHandler(db)
 	// setting up GIN routes
 	router := gin.Default()
 
@@ -29,6 +31,8 @@ func StartServer(repo storage.URLShortenerRepositories, baseURL string, serverAd
 
 	router.POST("/", h.PostHandler)
 	router.POST("/api/shorten", h.PostShortenHandler)
+
+	router.GET("/ping", pingHandler.Ping)
 
 	// starting the server
 	return router.Run(serverAddress)

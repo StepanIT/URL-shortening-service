@@ -13,6 +13,7 @@ const (
 	defaultBaseURL         = "http://localhost:8080"
 	defaultFileStoragePath = ""
 	defaultSecretKey       = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	defaultDatabaseDsn     = ""
 )
 
 // structure for storing server settings
@@ -21,6 +22,7 @@ type Config struct {
 	BaseURL         string
 	FileStoragePath string
 	SecretKey       string
+	DatabaseDsn     string
 }
 
 // create a configuration by loading environment variables from .env
@@ -34,6 +36,7 @@ func NewConfig() *Config {
 	flagBaseURL := flag.String("b", defaultBaseURL, " базовый адрес результирующего сокращённого URL")
 	flagFileStoragePath := flag.String("f", defaultFileStoragePath, "путь до файла с сокращёнными URL")
 	flagSecretKey := flag.String("s", defaultSecretKey, "secret key")
+	flagDatabaseDsn := flag.String("d", defaultDatabaseDsn, "PostgresSQL")
 	flag.Parse()
 
 	return &Config{
@@ -41,6 +44,7 @@ func NewConfig() *Config {
 		BaseURL:         getEnvOrFlag("BASE_URL", flagBaseURL, defaultBaseURL),
 		FileStoragePath: getEnvOrFlag("FILE_STORAGE_PATH", flagFileStoragePath, defaultFileStoragePath),
 		SecretKey:       getEnvOrFlag("SECRET_KEY", flagSecretKey, defaultSecretKey),
+		DatabaseDsn:     getEnvOrFlag("DATABASE_DSN", flagDatabaseDsn, defaultDatabaseDsn),
 	}
 }
 
