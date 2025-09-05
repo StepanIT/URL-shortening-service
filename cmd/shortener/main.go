@@ -1,7 +1,13 @@
 package main
 
-import "github.com/StepanIT/URL-shortening-service/cmd/shortener/server"
+import (
+	"log"
+
+	"github.com/StepanIT/URL-shortening-service/internal/app"
+)
 
 func main() {
-	server.Handler()
+	if err := app.Run(); err != nil {
+		log.Fatal("Application failed to start: ", err)
+	}
 }
