@@ -21,6 +21,7 @@ func (h *Handler) PostShortenBatchHandler(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&reqItems); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
+		return
 	}
 
 	userID := c.GetString("userID")
