@@ -37,7 +37,7 @@ func (h *Handler) PostShortenBatchHandler(c *gin.Context) {
 
 		respItems = append(respItems, BatchResponseItem{
 			CorrelationID: item.CorrelationID,
-			ShortURL:      c.Request.Host + "/" + id,
+			ShortURL:      h.BaseURL + "/" + id,
 		})
 	}
 	c.JSON(http.StatusCreated, respItems)
