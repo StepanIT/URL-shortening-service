@@ -30,12 +30,11 @@ func NewPostgresStorage(dsn string) (*PostrgesStorage, error) {
 
 func (s *PostrgesStorage) initSchema() error {
 	query := `
-		CREATE TABLE IF NOT EXISTS urls (
-			id SERIAL PRIMARY KEY,
-			short_url TEXT UNIQUE NOT NULL,
-			original_url TEXT NOT NULL,
-			user_id TEXT NOT NULL
-		);`
+CREATE TABLE IF NOT EXISTS urls (
+    short_url TEXT PRIMARY KEY,
+    original_url TEXT NOT NULL,
+    user_id TEXT NOT NULL
+);`
 	_, err := s.db.Exec(query)
 	return err
 }
