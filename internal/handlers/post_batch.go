@@ -24,11 +24,10 @@ func (h *Handler) PostShortenBatchHandler(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetString("userID")
-
 	respItems := make([]BatchResponseItem, 0, len(reqItems))
 
 	for _, item := range reqItems {
+		userID := c.GetString("userID")
 		id := generateID()
 		err := h.Repo.Save(id, item.OriginalURL, userID)
 		if err != nil {
