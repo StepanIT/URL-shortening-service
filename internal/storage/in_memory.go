@@ -47,3 +47,7 @@ func (s *InMemoryStorage) GetAllByUser(userID string) (map[string]string, error)
 
 	return result, nil
 }
+
+func (s *InMemoryStorage) Ping() error {
+	return nil
+}

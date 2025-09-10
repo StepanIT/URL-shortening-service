@@ -18,42 +18,49 @@ func Run() error {
 	cfg := config.NewConfig()
 	log.Printf("Starting with config: %+v", cfg)
 
-	var db *sql.DB
-	var err error
-	if cfg.DatabaseDsn != "" {
-		db, err := sql.Open("postgres", cfg.DatabaseDsn)
-		if err != nil {
-			panic(err)
-		}
-		defer db.Close()
+	var (
+		db   *sql.DB
+		repo storage.URLShortenerRepositories
+		err  error
+	)
 
-		if err := db.Ping(); err != nil {
-			log.Println("Database connection failed:", err)
+	// подключаем PostgreSQL
+	if cfg.DatabaseDsn != "" {
+		db, err = sql.Open("postgres", cfg.DatabaseDsn)
+		if err != nil {
+			log.Printf("Failed to open PostgreSQL: %v", err)
+		} else if pingErr := db.Ping(); pingErr != nil {
+			log.Printf("Failed to ping PostgreSQL: %v", pingErr)
+			db = nil
 		} else {
 			log.Println("Connected to PostgreSQL successfully")
+			repo, err = storage.NewPostgresStorage(cfg.DatabaseDsn)
+			if err != nil {
+				return fmt.Errorf("failed to init PostgreSQL storage: %w", err)
+			}
 		}
 	}
 
-	// path to file storage
-	var repo storage.URLShortenerRepositories
-
-	if cfg.FileStoragePath != "" {
-		// use FileStorage
+	// если нет PostgreSQL подключаем FileStorage
+	if repo == nil && cfg.FileStoragePath != "" {
+		log.Println("Trying File storage...")
 		repo, err = storage.NewFileStorage(cfg.FileStoragePath)
 		if err != nil {
-			return fmt.Errorf("config error: %w", err)
+			return fmt.Errorf("failed to init file storage: %w", err)
 		}
 		log.Println("Using file storage:", cfg.FileStoragePath)
-	} else {
-		// use in-memory storage
-		repo = storage.NewInMemoryStorage()
+	}
+
+	// если нет PostgreSQL и FileStorage используем InMemory
+	if repo == nil {
 		log.Println("Using in-memory storage")
+		repo = storage.NewInMemoryStorage()
 	}
 
 	u := &middleware.User{}
 	gob.Register(u)
 
-	log.Printf("Starting server on %s, %v, %s, %s, %s", cfg.ServerAddress, db, cfg.BaseURL, repo, cfg.SecretKey)
+	log.Printf("Starting server on %s, BaseURL: %s, Storage: %T", cfg.ServerAddress, cfg.BaseURL, repo)
 
 	// launch the server with all dependencies
 	err = server.StartServer(repo, db, cfg.BaseURL, cfg.ServerAddress, cfg.SecretKey)

@@ -96,3 +96,7 @@ func (fs *FileStorage) load() error {
 	// Unmarshal JSON into the map
 	return json.Unmarshal(data, &fs.data)
 }
+
+func (fs *FileStorage) Ping() error {
+	return nil
+}
