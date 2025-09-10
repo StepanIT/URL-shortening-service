@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,17 +35,26 @@ func (h *Handler) PostShortenBatchHandler(c *gin.Context) {
 
 	for _, item := range batchRequests {
 		id := generateID()
-		err := h.Repo.Save(id, item.OriginalURL, userID.(string))
-		if err != nil {
+		shortURL, err := h.Repo.Save(id, item.OriginalURL, userID.(string))
+
+		respItem := BatchResponseItem{
+			CorrelationID: item.CorrelationID,
+			ShortURL:      fmt.Sprintf("%s/get/%s", h.BaseURL, shortURL),
+		}
+
+		if err != nil && err.Error() == "url already exists" {
+			// URL уже есть — возвращаем существующий shortURL
+			batchResponses = append(batchResponses, respItem)
+			continue
+		} else if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to shorten URL"})
 			return
 		}
 
-		batchResponses = append(batchResponses, BatchResponseItem{
-			CorrelationID: item.CorrelationID,
-			ShortURL:      h.BaseURL + "/" + id,
-		})
+		// Новый URL успешно создан
+		batchResponses = append(batchResponses, respItem)
 	}
-	c.JSON(http.StatusCreated, batchResponses)
 
+	// Всегда возвращаем HTTP 201 для пакета, так как каждый item уникально обрабатывается
+	c.JSON(http.StatusCreated, batchResponses)
 }

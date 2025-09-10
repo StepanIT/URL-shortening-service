@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net/http"
 
@@ -30,45 +29,30 @@ func generateID() string {
 }
 
 func (h *Handler) PostHandler(c *gin.Context) {
-
-	// читаем тело запроса
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil || len(body) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "ошибка 400"})
 		return
 	}
-	log.Println("Получили URL:", body)
-
-	// преобразуем URL из байтов в строку
 	LongURL := string(body)
 
-	// выводим полученный URL
-	log.Println("Получили URL:", LongURL)
-
-	// получаем userID из контекста (установленного middleware аутентификации)
 	userIDValue, exists := c.Get("userID")
 	if !exists {
-		log.Println("UserID not found in context")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "ошибка аутентификации"})
 		return
 	}
-
 	userID := userIDValue.(string)
-	log.Printf("Получили URL от пользователя %s: %s", userID, LongURL)
 
-	// получаем ID
 	id := generateID()
-
-	// присваеваем полученный URL к полученному ID
-	err = h.Repo.Save(id, LongURL, userID)
-	log.Println("Присвоенный URL", err)
+	shortURL, err := h.Repo.Save(id, LongURL, userID)
 	if err != nil {
+		if err.Error() == "url already exists" {
+			c.String(http.StatusConflict, fmt.Sprintf("%s/get/%s", h.BaseURL, shortURL))
+			return
+		}
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при сохранении"})
 		return
 	}
 
-	shortURL := fmt.Sprintf("%s/get/%s", h.BaseURL, id)
-
-	// выводим ответ с кодом 201 и сокращенный URL
-	c.String(http.StatusCreated, shortURL)
+	c.String(http.StatusCreated, fmt.Sprintf("%s/get/%s", h.BaseURL, shortURL))
 }

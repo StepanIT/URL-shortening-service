@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 )
 
 // структура в которой map для хранения ключа ID и значения URL
@@ -19,10 +20,17 @@ func NewInMemoryStorage() *InMemoryStorage {
 }
 
 // функция сохраняет оригинальный URL по заданному короткому ID
-func (s *InMemoryStorage) Save(id, url, userID string) error {
+func (s *InMemoryStorage) Save(id, url, userID string) (string, error) {
+	// проверка на уже существующий URL
+	for k, v := range s.data {
+		if v == url {
+			return k, fmt.Errorf("url already exists")
+		}
+	}
+
 	s.data[id] = url
 	s.userData[id] = userID
-	return nil
+	return id, nil
 }
 
 // функция извлекает оригинальный URL по короткому ID

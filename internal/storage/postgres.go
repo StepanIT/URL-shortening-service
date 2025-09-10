@@ -2,7 +2,11 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 
+	"github.com/jackc/pgerrcode"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -33,21 +37,37 @@ func (s *PostrgesStorage) initSchema() error {
 		CREATE TABLE IF NOT EXISTS urls (
 			id SERIAL PRIMARY KEY,
 			short_url TEXT UNIQUE NOT NULL,
-			original_url TEXT NOT NULL,
+			original_url TEXT UNIQUE NOT NULL,
 			user_id TEXT NOT NULL
 		);`
 	_, err := s.db.Exec(query)
 	return err
 }
 
-func (s *PostrgesStorage) Save(shortURL, originalURL, userID string) error {
+func (s *PostrgesStorage) Save(shortURL, originalURL, userID string) (string, error) {
 	_, err := s.db.Exec(
 		`INSERT INTO urls (short_url, original_url, user_id)
-		VALUES ($1, $2, $3)
-		ON CONFLICT (short_url) DO NOTHING`,
+         VALUES ($1, $2, $3)`,
 		shortURL, originalURL, userID,
 	)
-	return err
+	if err != nil {
+		// проверяем, что это ошибка уникальности
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
+			// достаем уже существующий short_url
+			var existingShort string
+			row := s.db.QueryRow(
+				"SELECT short_url FROM urls WHERE original_url = $1",
+				originalURL,
+			)
+			if scanErr := row.Scan(&existingShort); scanErr != nil {
+				return "", scanErr
+			}
+			return existingShort, fmt.Errorf("url already exists")
+		}
+		return "", err
+	}
+	return shortURL, nil
 }
 
 func (s *PostrgesStorage) Get(shortURL string) (string, error) {

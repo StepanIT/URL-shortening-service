@@ -3,7 +3,7 @@ package storage
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"fmt"
 	"os"
 )
 
@@ -38,11 +38,17 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 }
 
 // Save saves the URL under the given ID to a file
-func (fs *FileStorage) Save(id string, url, userID string) error {
-	log.Printf("Сохранение в файл %s: %s -> %s", fs.filePath, id, url)
+func (fs *FileStorage) Save(id, url, userID string) (string, error) {
+	// проверка на уже существующий URL
+	for k, v := range fs.data.URLs {
+		if v == url {
+			return k, fmt.Errorf("url already exists")
+		}
+	}
+
 	fs.data.URLs[id] = url
 	fs.data.Users[id] = userID
-	return fs.save()
+	return id, fs.save()
 }
 
 // returns URL by ID or error
