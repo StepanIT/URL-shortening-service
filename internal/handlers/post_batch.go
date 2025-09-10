@@ -17,22 +17,22 @@ type BatchResponseItem struct {
 }
 
 func (h *Handler) PostShortenBatchHandler(c *gin.Context) {
-	var reqItems []BatchRequestItem
+	var batchRequests []BatchRequestItem
 
-	if err := c.ShouldBindJSON(&reqItems); err != nil {
+	if err := c.ShouldBindJSON(&batchRequests); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
 		return
 	}
 
-	respItems := make([]BatchResponseItem, 0, len(reqItems))
-
 	userID, exists := c.Get("userID")
+	batchResponses := make([]BatchResponseItem, 0, len(batchRequests))
+
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "user not identified"})
 		return
 	}
 
-	for _, item := range reqItems {
+	for _, item := range batchRequests {
 		id := generateID()
 		err := h.Repo.Save(id, item.OriginalURL, userID.(string))
 		if err != nil {
@@ -40,11 +40,11 @@ func (h *Handler) PostShortenBatchHandler(c *gin.Context) {
 			return
 		}
 
-		respItems = append(respItems, BatchResponseItem{
+		batchResponses = append(batchResponses, BatchResponseItem{
 			CorrelationID: item.CorrelationID,
 			ShortURL:      h.BaseURL + "/" + id,
 		})
 	}
-	c.JSON(http.StatusCreated, respItems)
+	c.JSON(http.StatusCreated, batchResponses)
 
 }
