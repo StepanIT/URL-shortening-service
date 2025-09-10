@@ -26,10 +26,15 @@ func (h *Handler) PostShortenBatchHandler(c *gin.Context) {
 
 	respItems := make([]BatchResponseItem, 0, len(reqItems))
 
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "user not identified"})
+		return
+	}
+
 	for _, item := range reqItems {
-		userID := c.GetString("userID")
 		id := generateID()
-		err := h.Repo.Save(id, item.OriginalURL, userID)
+		err := h.Repo.Save(id, item.OriginalURL, userID.(string))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to shorten URL"})
 			return
