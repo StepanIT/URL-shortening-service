@@ -18,6 +18,11 @@ func (h *Handler) GetHandler(c *gin.Context) {
 			"error": "ошибка 404: URL не найден"})
 		return
 	}
+	if LongURL == "" {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"error": "URL not found"})
+		return
+	}
 
 	// перенаправляет пользователя на оригинальный URL
 	c.Redirect(http.StatusTemporaryRedirect, LongURL)
