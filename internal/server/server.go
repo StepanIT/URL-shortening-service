@@ -26,7 +26,7 @@ func StartServer(repo storage.URLShortenerRepositories, db *sql.DB, baseURL stri
 	router.Use(middleware.GzipCompress())
 	router.Use(middleware.Auth(secretKey))
 
-	router.GET("/get/:id", h.GetHandler)
+	router.GET("/:id", h.GetHandler)
 	router.GET("/api/user/urls", h.GetUserURLsHandler)
 
 	router.POST("/", h.PostHandler)
