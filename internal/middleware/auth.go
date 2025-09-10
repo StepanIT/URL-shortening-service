@@ -32,10 +32,12 @@ func Auth(secretKey string) gin.HandlerFunc {
 		// Пытаемся прочитать подписанную куку
 		cookieValue, err := cookies.ReadSigned(c.Request, "userID", secretKey)
 		if err != nil || cookieValue == "" {
-			// Если нет куки или подпись невалидна, создаём новый userID
-			userID = generateUserID()
-			needSetCookie = true
-			log.Println("Cookie invalid or not found, generating new user ID:", userID)
+			if c.Request.Method == http.MethodPost &&
+				(c.FullPath() == "/api/shorten" || c.FullPath() == "/api/shorten/batch") {
+				userID = generateUserID()
+				needSetCookie = true
+				log.Println("Cookie invalid or not found, generating new user ID:", userID)
+			}
 		} else {
 			userID = cookieValue
 			log.Println("User authenticated:", userID)
