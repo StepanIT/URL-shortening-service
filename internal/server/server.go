@@ -31,6 +31,7 @@ func StartServer(repo storage.URLShortenerRepositories, db *sql.DB, baseURL stri
 
 	router.POST("/", h.PostHandler)
 	router.POST("/api/shorten", h.PostShortenHandler)
+	router.POST("/api/shorten/batch", h.PostShortenBatchHandler)
 
 	router.GET("/ping", pingHandler.Ping)
 
