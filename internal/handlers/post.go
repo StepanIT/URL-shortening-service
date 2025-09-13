@@ -1,18 +1,21 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net/http"
 
-	"github.com/StepanIT/URL-shortening-service/cmd/shortener/storage"
+	"github.com/StepanIT/URL-shortening-service/internal/storage"
 	"github.com/gin-gonic/gin"
 )
 
 // структура с интерфейсом для работы с хранилищем
 type Handler struct {
-	Repo storage.Repositories
+	Repo          storage.URLShortenerRepositories
+	BaseURL       string
+	ServerAddress string
+	SecretKey     string
 }
 
 // функция для генерации ID
@@ -26,33 +29,30 @@ func generateID() string {
 }
 
 func (h *Handler) PostHandler(c *gin.Context) {
-
-	// читаем тело запроса
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil || len(body) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "ошибка 400"})
 		return
 	}
-	log.Println("Получили URL:", body)
-
-	// преобразуем URL из байтов в строку
 	LongURL := string(body)
 
-	// выводим полученный URL
-	log.Println("Получили URL:", LongURL)
+	userIDValue, exists := c.Get("userID")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "ошибка аутентификации"})
+		return
+	}
+	userID := userIDValue.(string)
 
-	// получаем ID
 	id := generateID()
-
-	// присваеваем полученный URL к полученному ID
-	err = h.Repo.Save(id, LongURL)
-	log.Println("Присвоенный URL", err)
+	shortURL, err := h.Repo.Save(id, LongURL, userID)
 	if err != nil {
+		if err.Error() == "url already exists" {
+			c.String(http.StatusConflict, fmt.Sprintf("%s/get/%s", h.BaseURL, shortURL))
+			return
+		}
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при сохранении"})
 		return
 	}
 
-	// выводим ответ с кодом 201 и сокращенный URL
-	c.String(http.StatusCreated, "http://%s/get/%s", storage.ServerAddress, id)
-
+	c.String(http.StatusCreated, fmt.Sprintf("%s/get/%s", h.BaseURL, shortURL))
 }
