@@ -14,24 +14,19 @@ type URLData struct {
 	OriginalURL string
 }
 
-type PostrgesStorage struct {
+type PostgresStorage struct {
 	db *sql.DB
 }
 
-func NewPostgresStorage(dsn string) (*PostrgesStorage, error) {
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	s := &PostrgesStorage{db: db}
+func NewPostgresStorage(db *sql.DB) (*PostgresStorage, error) {
+	s := &PostgresStorage{db: db}
 	if err := s.initSchema(); err != nil {
 		return nil, err
 	}
 	return s, nil
 }
 
-func (s *PostrgesStorage) initSchema() error {
+func (s *PostgresStorage) initSchema() error {
 	query := `
 		CREATE TABLE IF NOT EXISTS urls (
 			id SERIAL PRIMARY KEY,
@@ -43,7 +38,7 @@ func (s *PostrgesStorage) initSchema() error {
 	return err
 }
 
-func (s *PostrgesStorage) Save(shortURL, originalURL, userID string) (string, error) {
+func (s *PostgresStorage) Save(shortURL, originalURL, userID string) (string, error) {
 	_, err := s.db.Exec(
 		`INSERT INTO urls (short_url, original_url, user_id)
          VALUES ($1, $2, $3)`,
@@ -69,7 +64,7 @@ func (s *PostrgesStorage) Save(shortURL, originalURL, userID string) (string, er
 	return shortURL, nil
 }
 
-func (s *PostrgesStorage) Get(shortURL string) (string, error) {
+func (s *PostgresStorage) Get(shortURL string) (string, error) {
 	var originalURL string
 	err := s.db.QueryRow(
 		"SELECT original_url FROM urls WHERE short_url = $1",
@@ -81,7 +76,7 @@ func (s *PostrgesStorage) Get(shortURL string) (string, error) {
 	return originalURL, err
 }
 
-func (s *PostrgesStorage) GetAllByUser(userID string) (map[string]string, error) {
+func (s *PostgresStorage) GetAllByUser(userID string) (map[string]string, error) {
 	rows, err := s.db.Query(
 		"SELECT short_url, original_url FROM urls WHERE user_id = $1",
 		userID,
@@ -102,6 +97,6 @@ func (s *PostrgesStorage) GetAllByUser(userID string) (map[string]string, error)
 	return urls, rows.Err()
 }
 
-func (s *PostrgesStorage) Ping() error {
+func (s *PostgresStorage) Ping() error {
 	return s.db.Ping()
 }
