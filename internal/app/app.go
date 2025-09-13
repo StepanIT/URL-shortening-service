@@ -26,23 +26,22 @@ func Run() error {
 
 	// подключаем PostgreSQL
 	if cfg.DatabaseDsn != "" {
-		db, err := sql.Open("postgres", cfg.DatabaseDsn)
+		db, err = sql.Open("postgres", cfg.DatabaseDsn)
 		if err != nil {
-			return fmt.Errorf("failed to open PostgreSQL: %w", err)
+			log.Printf("Failed to open PostgreSQL: %v", err)
+		} else if err = db.Ping(); err != nil {
+			log.Printf("Failed to ping PostgreSQL: %v", err)
+			db.Close()
+			db = nil
+		} else {
+			log.Println("Connected to PostgreSQL successfully")
+			repo, err = storage.NewPostgresStorage(db)
+			if err != nil {
+				log.Printf("Failed to init PostgreSQL storage: %v", err)
+				db.Close()
+				db = nil
+			}
 		}
-
-		if err := db.Ping(); err != nil {
-			return fmt.Errorf("failed to ping PostgreSQL: %w", err)
-		}
-
-		log.Println("Connected to PostgreSQL successfully")
-
-		repo, err = storage.NewPostgresStorage(db)
-		if err != nil {
-			return fmt.Errorf("failed to init PostgreSQL storage: %w", err)
-		}
-
-		defer db.Close()
 	}
 
 	// если нет PostgreSQL подключаем FileStorage
